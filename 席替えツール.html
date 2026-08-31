@@ -3,322 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>きょうしつラボ | 席替えツール</title>
+<title>RPツールズ | 席替えツール</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Kosugi+Maru&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Zen Kaku Gothic New', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace']
+        },
+        colors: {
+          ink: '#121214',
+          panel: '#1a1a1d',
+          panel2: '#202024',
+          line: '#323236',
+          linestrong: '#46464c',
+          paper: '#f5f4f0',
+          muted: '#98979c',
+          amber: '#ffb020',
+          amberdark: '#d99414',
+          amberink: '#1a1200'
+        }
+      }
+    }
+  }
+</script>
 <style>
-  :root{
-    --chalkboard:#2b3a32;
-    --chalkboard-dark:#20302a;
-    --chalk:#f7f3e8;
-    --chalk-dim:#e7e0cf;
-    --wood:#b5793e;
-    --wood-dark:#8a5a2b;
-    --wood-light:#d9a866;
-    --sakura:#e39a9a;
-    --sakura-dark:#c96f6f;
-    --ruled:#c9c2b2;
-    --ink:#2a2622;
-    --ok:#5c8a6a;
-    --warn:#c1543f;
-    --fixedbg:#dde4d0;
-    --fixedbg-dark:#a9b898;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--chalk);
-    color:var(--ink);
-    font-family:'Zen Kaku Gothic New', sans-serif;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-  }
-  ::selection{background:var(--sakura);color:var(--chalkboard-dark);}
+  body{ background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1.4px); background-size: 24px 24px; }
 
-  header.site-head{
-    background:
-      radial-gradient(ellipse at 20% -10%, rgba(255,255,255,0.04), transparent 60%),
-      var(--chalkboard);
-    color:var(--chalk);
-    padding:28px 32px 24px;
-    position:relative;
-    border-bottom:6px solid var(--wood-dark);
-  }
-  header.site-head::after{
-    content:"";
-    position:absolute;
-    left:0;right:0;bottom:-6px;
-    height:6px;
-    background:repeating-linear-gradient(90deg, var(--wood) 0 14px, var(--wood-dark) 14px 16px);
-  }
-  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-  .brand h1{
-    font-family:'Klee One', sans-serif;
-    font-weight:600;
-    font-size:clamp(24px,4vw,34px);
-    margin:0;
-    letter-spacing:.02em;
-  }
-  .brand-sub{font-family:'Kosugi Maru', sans-serif;font-size:13px;opacity:.68;letter-spacing:.08em;}
-
-  .app{display:grid;grid-template-columns:220px 1fr;max-width:1180px;margin:0 auto;}
-  @media (max-width:760px){.app{grid-template-columns:1fr;}}
-
-  nav.tool-nav{padding:28px 18px;border-right:1px dashed var(--ruled);}
-  @media (max-width:760px){nav.tool-nav{border-right:none;border-bottom:1px dashed var(--ruled);padding:18px 20px 8px;}}
-  .tool-nav h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8375;margin:0 0 14px 4px;}
-  .tool-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
-  @media (max-width:760px){.tool-list{flex-direction:row;flex-wrap:wrap;}}
-  .tool-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14.5px;cursor:default;}
-  .tool-item .dot{width:8px;height:8px;border-radius:50%;flex:none;}
-  .tool-item.active{background:var(--chalkboard);color:var(--chalk);font-weight:700;}
-  .tool-item.active .dot{background:var(--sakura);}
-  .tool-item.soon{color:#a49c8c;}
-  .tool-item.soon .dot{background:#d8d2c2;border:1px solid #c9c2b2;}
-  .tool-item.soon .soon-tag{margin-left:auto;font-size:10px;background:#ece7d9;color:#948c7a;padding:2px 6px;border-radius:6px;font-family:'Kosugi Maru',sans-serif;}
-
-  main{padding:30px 32px 60px;}
-  @media (max-width:760px){main{padding:22px 18px 48px;}}
-
-  .tool-title{font-family:'Klee One', sans-serif;font-weight:600;font-size:26px;margin:0 0 4px;display:flex;align-items:center;gap:10px;}
-  .tool-desc{color:#5c574c;font-size:14.5px;margin:0 0 26px;max-width:64ch;}
-
-  .panel{background:#fffdf7;border:1px solid var(--ruled);border-radius:16px;padding:22px 22px 24px;margin-bottom:22px;box-shadow:0 1px 0 rgba(0,0,0,0.02);}
-  .panel h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px;}
-  .panel h3 .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--wood);color:#fff;font-size:12px;font-family:'Kosugi Maru',sans-serif;}
-
-  textarea{
-    width:100%;min-height:150px;resize:vertical;
-    border:1.5px solid var(--ruled);border-radius:10px;padding:12px 14px;
-    font-family:'Zen Kaku Gothic New', sans-serif;font-size:14px;line-height:1.7;color:var(--ink);
-    background:repeating-linear-gradient(#fffdf7 0 29px, #eee7d6 30px);background-attachment:local;
-  }
-  textarea:focus{outline:2px solid var(--wood-light);outline-offset:1px;}
-  .hint{font-size:12px;color:#918a7a;margin-top:8px;line-height:1.6;}
-
-  .row{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end;}
-  .field{display:flex;flex-direction:column;gap:6px;}
-  .field label{font-size:12.5px;color:#5c574c;font-weight:500;}
-  .field input[type=number]{width:96px;padding:8px 10px;border:1.5px solid var(--ruled);border-radius:8px;font-size:14px;font-family:inherit;}
-  .field input[type=number]:focus{outline:2px solid var(--wood-light);}
-
-  .mode-toggle{display:flex;gap:8px;}
-  .mode-btn{border:1.5px solid var(--ruled);background:#fff;padding:8px 13px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;color:#5c574c;}
-  .mode-btn.selected{background:var(--chalkboard);border-color:var(--chalkboard);color:var(--chalk);}
-
-  button.primary{
-    border:none;background:var(--wood);color:#fff;padding:12px 22px;border-radius:10px;
-    font-size:15px;font-weight:700;font-family:'Zen Kaku Gothic New', sans-serif;cursor:pointer;
-    box-shadow:0 3px 0 var(--wood-dark);transition:transform .08s ease;
-  }
-  button.primary:hover{filter:brightness(1.04);}
-  button.primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wood-dark);}
-  button.primary:focus-visible{outline:3px solid var(--sakura);outline-offset:2px;}
-  button.primary:disabled{background:#c9c2b2;box-shadow:0 3px 0 #a9a28f;cursor:not-allowed;}
-
-  button.ghost{border:1.5px solid var(--ruled);background:#fff;color:#5c574c;padding:11px 18px;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;}
-  button.ghost:hover{border-color:var(--wood);color:var(--wood-dark);}
-  button.ghost:focus-visible{outline:3px solid var(--sakura);outline-offset:2px;}
-
-  button.small{border:1.5px solid var(--ruled);background:#fff;color:#5c574c;padding:8px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;font-family:inherit;}
-  button.small:hover{border-color:var(--wood);color:var(--wood-dark);}
-
-  .status-msg{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:14px;display:none;}
-  .status-msg.show{display:block;}
-  .status-msg.error{background:#fbe9e6;color:var(--warn);}
-  .status-msg.ok{background:#e9f2ea;color:var(--ok);}
-
-  .capacity-info{font-size:12.5px;color:#6b6455;margin-top:10px;line-height:1.7;}
-  .capacity-info strong{color:var(--ink);}
-
-  .chart-wrap{background:linear-gradient(180deg,#efe9db,#e6dfcd);border-radius:16px;padding:26px 20px 30px;border:1px solid var(--ruled);}
-  .board{max-width:340px;margin:0 auto 26px;background:var(--chalkboard);color:var(--chalk-dim);text-align:center;padding:12px;border-radius:6px;border:5px solid var(--wood-dark);font-family:'Klee One',sans-serif;font-size:13px;letter-spacing:.1em;box-shadow:0 4px 10px rgba(0,0,0,.12);}
-  .seat-grid{display:grid;gap:14px;justify-content:center;}
   .desk{
-    width:100%;aspect-ratio:5/4;min-width:64px;max-width:118px;
-    background:linear-gradient(160deg,var(--wood-light),var(--wood));
-    border:2px solid var(--wood-dark);border-radius:10px;
+    aspect-ratio:5/4;min-width:56px;
+    border:1.5px solid #323236;border-radius:6px;
     display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;
-    position:relative;cursor:pointer;user-select:none;
-    box-shadow:0 3px 0 rgba(0,0,0,0.12);
-    transition:transform .15s ease, box-shadow .15s ease;
+    position:relative;cursor:pointer;user-select:none;background:#1a1a1d;
+    transition:border-color .12s ease, background .12s ease;
   }
-  .desk:hover{transform:translateY(-2px);}
-  .desk:focus-visible{outline:3px solid var(--sakura);outline-offset:2px;}
-  .desk .seat-no{position:absolute;top:4px;left:6px;font-size:9px;color:rgba(255,255,255,0.75);font-family:'Kosugi Maru',sans-serif;}
-  .desk .seat-name{font-family:'Klee One',sans-serif;font-size:13px;color:#3a2712;line-height:1.3;word-break:break-word;max-height:100%;overflow:hidden;}
+  .desk:hover{border-color:#ffb020;}
+  .desk:focus-visible{outline:2px solid #ffb020;outline-offset:2px;}
+  .desk .seat-no{position:absolute;top:3px;left:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#65656b;}
+  .desk .seat-name{font-size:12.5px;color:#f5f4f0;line-height:1.3;word-break:break-word;max-height:100%;overflow:hidden;}
 
-  .desk.ghost-spacer{visibility:hidden;pointer-events:none;box-shadow:none;}
-
-  .desk.empty-slot{background:repeating-linear-gradient(45deg,#e6dfcd,#e6dfcd 6px,#ddd5c1 6px,#ddd5c1 12px);border-style:dashed;border-color:#b9b096;}
-  .desk.empty-slot .seat-name{color:#9a9179;font-size:11px;}
-
-  .desk.forced-empty{background:repeating-linear-gradient(45deg,#dbe6ea,#dbe6ea 6px,#c9dade 6px,#c9dade 12px);border-style:dashed;border-color:#93a9b0;}
-  .desk.forced-empty .seat-name{color:#5f7d85;font-size:10.5px;}
-
-  .desk.blocked{background:#cfcabb;border-style:dashed;border-color:#a39a80;}
-  .desk.blocked .seat-name{color:#867d67;font-size:11px;}
-
-  .desk.fixed{border:2.5px solid var(--sakura-dark);box-shadow:0 3px 0 rgba(0,0,0,0.12), 0 0 0 3px rgba(227,154,154,.25) inset;}
+  .desk.ghost-spacer{visibility:hidden;pointer-events:none;border:none;}
+  .aisle-gap{visibility:hidden;pointer-events:none;}
+  .desk.empty-slot{background:#1a1a1d;}
+  .desk.empty-slot .seat-name{color:#65656b;font-size:11px;}
+  .desk.forced-empty{background:repeating-linear-gradient(45deg,#1a1a1d,#1a1a1d 6px,#202024 6px,#202024 12px);border-style:dashed;border-color:#46464c;}
+  .desk.forced-empty .seat-name{color:#8a8a90;font-size:10.5px;}
+  .desk.blocked{background:#0e0e10;border-style:dashed;border-color:#2a2a2e;}
+  .desk.blocked .seat-name{color:#5a5a60;font-size:11px;}
+  .desk.fixed{border:1.5px solid #ffb020;background:rgba(255,176,32,0.1);}
+  .desk.fixed .seat-name{color:#ffd27a;font-weight:700;}
   .desk.fixed::before{
     content:"指定";position:absolute;top:-8px;right:-6px;
-    background:var(--sakura-dark);color:#fff;font-size:9px;
-    padding:2px 5px;border-radius:6px;font-family:'Kosugi Maru',sans-serif;
-    box-shadow:0 1px 2px rgba(0,0,0,.2);
+    background:#ffb020;color:#1a1200;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;
   }
+  .desk.settling{animation:pop .28s ease;}
+  @keyframes pop{0%{transform:scale(.92);}55%{transform:scale(1.05);}100%{transform:scale(1);}}
+  .desk .seat-name.cycling{opacity:.5;}
+  @media (prefers-reduced-motion: reduce){.desk, .desk.settling{animation:none !important;}}
 
-  .desk.settling{animation:pop .32s ease;}
-  @keyframes pop{0%{transform:scale(.9);}55%{transform:scale(1.07);}100%{transform:scale(1);}}
-  .desk .seat-name.cycling{opacity:.55;}
-
-  .chart-legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:20px;font-size:12px;color:#6b6455;}
-  .chart-legend span{display:inline-flex;align-items:center;gap:6px;}
-  .legend-swatch{width:12px;height:12px;border-radius:3px;display:inline-block;}
-
-  footer{text-align:center;font-size:12px;color:#a49c8c;padding:20px 0 34px;}
-
-  /* seat menu popover */
-  .seat-menu{
-    position:absolute;z-index:50;
-    background:#fffdf7;border:1.5px solid var(--ruled);border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,.16);
-    padding:14px;width:230px;
-    font-size:13px;
-  }
+  .seat-menu{position:absolute;z-index:50;background:#1a1a1d;border:1px solid #46464c;border-radius:8px;box-shadow:0 12px 28px rgba(0,0,0,.5);padding:14px;width:230px;font-size:13px;color:#f5f4f0;}
   .seat-menu[hidden]{display:none;}
-  .seat-menu-head{font-family:'Klee One',sans-serif;font-size:13px;margin-bottom:10px;color:#5c574c;}
-  .seat-menu button.sm-action{
-    display:block;width:100%;text-align:left;
-    border:1px solid var(--ruled);background:#fff;color:var(--ink);
-    padding:8px 10px;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:12.5px;font-family:inherit;
-  }
-  .seat-menu button.sm-action:hover{border-color:var(--wood);}
-  .seat-menu button.sm-action.current{background:var(--chalkboard);color:var(--chalk);border-color:var(--chalkboard);}
-  .seat-menu-fixed{margin-top:8px;padding-top:10px;border-top:1px dashed var(--ruled);}
-  .seat-menu-fixed label{display:block;font-size:11.5px;color:#8a8375;margin-bottom:6px;}
-  .seat-menu-fixed select, .seat-menu-fixed input[type=text]{
-    width:100%;padding:7px 8px;border:1.5px solid var(--ruled);border-radius:7px;font-size:12.5px;margin-bottom:6px;font-family:inherit;
-  }
-  .seat-menu-close{margin-top:4px;background:none;border:none;color:#a49c8c;font-size:11.5px;cursor:pointer;text-decoration:underline;padding:0;}
+  textarea{background-color:#111113;background-image:repeating-linear-gradient(rgba(255,255,255,0) 0 28px, rgba(255,255,255,0.035) 29px);background-attachment:local;color:#f5f4f0;}
+  textarea::placeholder{color:#65656b;}
 
-  @media (prefers-reduced-motion: reduce){.desk, .desk.settling{animation:none !important; transition:none !important;}}
+  .board-toggle{display:inline-flex;align-items:center;justify-content:center;padding:9px 0;border:1.5px dashed #46464c;border-radius:6px;color:#98979c;font-size:11px;letter-spacing:.14em;font-family:'JetBrains Mono',monospace;margin-bottom:10px;background:#161618;}
+  .ng-chip{display:inline-flex;align-items:center;gap:6px;background:#0e0e10;border:1px solid #323236;border-radius:999px;padding:4px 6px 4px 10px;font-size:12px;}
+  .ng-chip button{color:#98979c;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 3px;}
+  .ng-chip button:hover{color:#fca5a5;}
+  select{background-color:#111113;color:#f5f4f0;}
 </style>
 </head>
-<body>
+<body class="font-sans bg-ink text-paper antialiased">
 
-<header class="site-head">
-  <div class="brand">
-    <a href="席替えツール.html" style="color:inherit;text-decoration:none;"><h1>きょうしつラボ</h1></a>
-    <span class="brand-sub">CLASSROOM TOOLKIT</span>
+<header class="border-b border-line relative">
+  <div class="absolute top-0 left-0 right-0 h-[3px] bg-amber"></div>
+  <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between flex-wrap gap-3">
+    <a href="index.html" class="flex items-baseline gap-3 hover:opacity-80">
+      <span class="w-2.5 h-2.5 bg-amber inline-block"></span>
+      <span class="text-lg font-black tracking-tight">RPツールズ</span>
+    </a>
+    <nav class="flex gap-6 text-sm">
+      <span class="font-bold text-amber border-b-2 border-amber pb-1">席替えツール</span>
+      <a href="いけんボード.html" class="text-muted hover:text-paper pb-1">いけんボード</a>
+      <a href="グループ活動ボード.html" class="text-muted hover:text-paper pb-1">グループ活動ボード</a>
+    </nav>
   </div>
 </header>
 
-<div class="app">
-  <nav class="tool-nav" aria-label="ツール一覧">
-    <h2>ツール一覧</h2>
-    <ul class="tool-list">
-      <li class="tool-item active"><span class="dot"></span>席替えツール</li>
-      <li><a class="tool-item" style="color:var(--ink);text-decoration:none;cursor:pointer;" href="いけんボード.html"><span class="dot" style="background:var(--wood);"></span>いけんボード</a></li>
-      <li class="tool-item soon"><span class="dot"></span>くじ引き機<span class="soon-tag">準備中</span></li>
-      <li class="tool-item soon"><span class="dot"></span>号令タイマー<span class="soon-tag">準備中</span></li>
-      <li class="tool-item soon"><span class="dot"></span>持ち物チェックリスト<span class="soon-tag">準備中</span></li>
-    </ul>
-  </nav>
+<main class="max-w-3xl mx-auto px-6 py-10">
+  <h1 class="text-xl font-black mb-1">🪑 席替えツール</h1>
+  <p class="text-sm text-muted mb-8">名簿を貼り付けて座席の形を決めるだけ。空席・使わない席・指定席・通路・NGペアなど、教室に合わせて細かくカスタマイズできます。</p>
 
-  <main>
-    <h2 class="tool-title">🪑 席替えツール</h2>
-    <p class="tool-desc">名簿を貼り付けて座席の形を決めるだけ。空席・使わない席・指定席、グリッド型/コの字型のどちらにも対応しています。</p>
+  <section class="bg-panel border border-line rounded-md p-5 mb-5">
+    <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span class="font-mono text-amber text-xs">01</span>名前を入力</h2>
+    <textarea id="nameInput" class="w-full min-h-[140px] border border-line rounded-md p-3 text-sm leading-7 focus:outline-none focus:border-amber" placeholder="例)&#10;&#10;山田 太郎&#10;&#10;佐藤 花子&#10;&#10;鈴木 一郎&#10;&#10;…(空行区切りなら1人分)"></textarea>
+    <p id="modeHint" class="text-xs text-muted mt-2 leading-relaxed">区切り方: <strong class="text-paper">空行区切り</strong>(段落ごと)。空行がない場合は自動的に1行=1人として読み込みます。</p>
+    <div class="flex items-end gap-4 mt-3 flex-wrap">
+      <div>
+        <label class="block text-xs text-muted mb-1.5">区切り方</label>
+        <div class="flex gap-2">
+          <button type="button" class="mode-btn px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber" data-mode="para">空行区切り</button>
+          <button type="button" class="mode-btn px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber" data-mode="line">1行=1人</button>
+        </div>
+      </div>
+      <span id="countBadge" class="font-mono text-xs text-muted ml-auto">0人 認識中</span>
+    </div>
+  </section>
 
-    <div class="panel">
-      <h3><span class="num">1</span>名前を入力</h3>
-      <textarea id="nameInput" placeholder="例)&#10;&#10;山田 太郎&#10;&#10;佐藤 花子&#10;&#10;鈴木 一郎&#10;&#10;…&#10;&#10;(空行で区切ると1人分として認識します)"></textarea>
-      <div class="hint" id="modeHint">区切り方: <strong>空行区切り</strong>(段落ごと)。空行がない場合は自動的に1行=1人として読み込みます。</div>
-      <div class="row" style="margin-top:12px;">
-        <div class="field">
-          <label>区切り方</label>
-          <div class="mode-toggle">
-            <button type="button" class="mode-btn selected" data-mode="para">空行区切り</button>
-            <button type="button" class="mode-btn" data-mode="line">1行=1人</button>
-          </div>
-        </div>
-        <div class="field" style="margin-left:auto;">
-          <label>&nbsp;</label>
-          <span id="countBadge" style="font-size:13px;color:#7a7362;">0人 認識中</span>
-        </div>
+  <section class="bg-panel border border-line rounded-md p-5 mb-5">
+    <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span class="font-mono text-amber text-xs">02</span>座席の形を決める</h2>
+    <div>
+      <label class="block text-xs text-muted mb-1.5">レイアウト</label>
+      <div class="flex gap-2 flex-wrap">
+        <button type="button" class="shape-btn px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber" data-shape="grid">グリッド型</button>
+        <button type="button" class="shape-btn px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber" data-shape="u">コの字型(U字・前が開く)</button>
+        <button type="button" class="shape-btn px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber" data-shape="ro">ロの字型(四方を囲む)</button>
       </div>
     </div>
-
-    <div class="panel">
-      <h3><span class="num">2</span>座席の形を決める</h3>
-      <div class="row">
-        <div class="field">
-          <label>レイアウト</label>
-          <div class="mode-toggle">
-            <button type="button" class="mode-btn selected" data-shape="grid">グリッド型</button>
-            <button type="button" class="mode-btn" data-shape="u">コの字型(U字)</button>
-          </div>
-        </div>
+    <div class="flex items-end gap-4 mt-4 flex-wrap">
+      <div>
+        <label id="rowsLabel" class="block text-xs text-muted mb-1.5">行数(前後)</label>
+        <input type="number" id="rowsInput" min="1" max="12" value="4" class="w-20 bg-ink border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber">
       </div>
-      <div class="row" style="margin-top:16px;">
-        <div class="field">
-          <label id="rowsLabel" for="rowsInput">行数(前後)</label>
-          <input type="number" id="rowsInput" min="1" max="12" value="4">
-        </div>
-        <div class="field">
-          <label id="colsLabel" for="colsInput">列数(左右)</label>
-          <input type="number" id="colsInput" min="1" max="12" value="6">
-        </div>
-        <div class="field">
-          <label for="extraInput">＋余分に空けておく席</label>
-          <input type="number" id="extraInput" min="0" max="20" value="0">
-        </div>
-        <div class="field">
-          <button type="button" class="ghost" id="autoFitBtn">🧮 人数に合わせて自動計算</button>
-        </div>
-        <div class="field">
-          <button type="button" class="ghost" id="rebuildBtn">この形で座席を作る</button>
-        </div>
+      <div>
+        <label id="colsLabel" class="block text-xs text-muted mb-1.5">列数(左右)</label>
+        <input type="number" id="colsInput" min="1" max="12" value="6" class="w-20 bg-ink border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber">
       </div>
-      <div class="hint">机をクリックすると、通常席・空席・使わない席・指定席を選べるメニューが開きます。「この形で座席を作る」を押すと、すべての机の設定がリセットされます。</div>
+      <div>
+        <label class="block text-xs text-muted mb-1.5">＋余分に空けておく席</label>
+        <input type="number" id="extraInput" min="0" max="20" value="0" class="w-20 bg-ink border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber">
+      </div>
+      <button type="button" id="autoFitBtn" class="px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber hover:text-amber">🧮 人数に合わせて自動計算</button>
+      <button type="button" id="rebuildBtn" class="px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber hover:text-amber">この形で座席を作る</button>
     </div>
 
-    <div class="panel">
-      <h3><span class="num">3</span>シャッフルする</h3>
-      <div class="row">
-        <button type="button" class="primary" id="shuffleBtn">🔀 席替えする</button>
-        <button type="button" class="ghost" id="resetStatesBtn">すべての席の設定をリセット</button>
+    <div class="flex items-end gap-4 mt-4 flex-wrap pt-4 border-t border-dashed border-line">
+      <div>
+        <label for="aisleInput" class="block text-xs text-muted mb-1.5">通路の位置(列のグループ)</label>
+        <input type="text" id="aisleInput" placeholder="例) 3,3" class="w-32 bg-ink border border-line rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-amber">
       </div>
-      <div class="status-msg" id="statusMsg"></div>
-      <div class="capacity-info" id="capacityInfo"></div>
-    </div>
-
-    <div class="chart-wrap">
-      <div class="board">こくばん</div>
-      <div class="seat-grid" id="seatGrid"></div>
-      <div class="chart-legend">
-        <span><span class="legend-swatch" style="background:linear-gradient(160deg,var(--wood-light),var(--wood));"></span>通常席</span>
-        <span><span class="legend-swatch" style="background:#cfcabb;"></span>使わない席</span>
-        <span><span class="legend-swatch" style="background:repeating-linear-gradient(45deg,#dbe6ea,#dbe6ea 4px,#c9dade 4px,#c9dade 8px);"></span>空席(今回)</span>
-        <span><span class="legend-swatch" style="background:var(--wood);border:2px solid var(--sakura-dark);"></span>指定席</span>
+      <div class="flex items-center gap-2 pb-1.5">
+        <input type="checkbox" id="frontToggle" class="w-4 h-4 accent-amber">
+        <label for="frontToggle" class="text-xs text-muted">黒板/前方の目印を表示する</label>
       </div>
     </div>
-  </main>
-</div>
+    <p class="text-xs text-muted mt-3 leading-relaxed">
+      通路: 列数を「,」区切りのグループ数に分けると、その間に通路(すきま)ができます。列数6で「3,3」なら3列＋通路＋3列になります。合計が列数と一致しないと無視されます。<br>
+      机をクリックすると、通常席・空席・使わない席・指定席を選べます。「この形で座席を作る」を押すとすべての机の設定がリセットされます。
+    </p>
+  </section>
 
-<footer>きょうしつラボ — 教室のちいさな手間を減らすツール集</footer>
+  <section class="bg-panel border border-line rounded-md p-5 mb-5">
+    <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span class="font-mono text-amber text-xs">03</span>席替えの条件(オプション)</h2>
+    <div class="flex items-center gap-2 mb-4">
+      <input type="checkbox" id="avoidRepeatToggle" class="w-4 h-4 accent-amber">
+      <label for="avoidRepeatToggle" class="text-xs text-muted">できるだけ前回と同じ席にしない</label>
+    </div>
+    <label class="block text-xs text-muted mb-1.5">隣にしたくない組み合わせ(NGペア)</label>
+    <div class="flex items-end gap-2 flex-wrap">
+      <select id="ngNameA" class="border border-line rounded-md px-2 py-1.5 text-xs min-w-[130px]"><option value="">名前を選ぶ…</option></select>
+      <span class="text-muted text-xs">×</span>
+      <select id="ngNameB" class="border border-line rounded-md px-2 py-1.5 text-xs min-w-[130px]"><option value="">名前を選ぶ…</option></select>
+      <button type="button" id="ngAddBtn" class="px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber hover:text-amber">＋ NGペアに追加</button>
+    </div>
+    <div id="ngList" class="flex flex-wrap gap-2 mt-3"></div>
+    <p class="text-xs text-muted mt-3 leading-relaxed">左右・前後で隣り合わないように、できる範囲で自動的に配置し直します(名簿の更新に合わせて選択肢も更新されます)。どうしても配置できない場合は完全には守れないことがあります。</p>
+  </section>
+
+  <section class="bg-panel border border-line rounded-md p-5 mb-8">
+    <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span class="font-mono text-amber text-xs">04</span>シャッフルする</h2>
+    <div class="flex gap-3 flex-wrap">
+      <button type="button" id="shuffleBtn" class="px-5 py-2.5 text-sm font-bold text-amberink bg-amber rounded-md hover:brightness-110">🔀 席替えする</button>
+      <button type="button" id="resetStatesBtn" class="px-4 py-2.5 text-sm border border-line rounded-md hover:border-amber hover:text-amber">すべての席の設定をリセット</button>
+    </div>
+    <div id="statusMsg" class="hidden text-sm px-3 py-2 rounded-md mt-3"></div>
+    <div id="capacityInfo" class="text-xs text-muted mt-3 leading-relaxed font-mono"></div>
+  </section>
+
+  <section class="bg-panel border border-line rounded-md p-5">
+    <div id="frontMarker" class="board-toggle hidden">🖥️ 黒板 / 前方はこちら</div>
+    <div id="seatGrid" class="grid gap-2.5 justify-center"></div>
+    <div class="flex gap-5 flex-wrap justify-center mt-5 text-xs text-muted">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-panel border border-line"></span>通常席</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-black border border-line"></span>使わない席</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-panel2 border border-dashed border-linestrong"></span>空席(今回)</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber/20 border border-amber"></span>指定席</span>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-line py-8 mt-10">
+  <p class="text-center text-xs text-muted font-mono tracking-wide">RPツールズ</p>
+</footer>
 
 <div id="seatMenu" class="seat-menu" hidden role="menu">
-  <div class="seat-menu-head">せき <span id="smSeatNo"></span> の設定</div>
-  <button type="button" class="sm-action" data-action="normal">通常にする(シャッフル対象)</button>
-  <button type="button" class="sm-action" data-action="forced-empty">空席にする(今回だけ空ける)</button>
-  <button type="button" class="sm-action" data-action="blocked">使わない席にする(常に除外)</button>
-  <div class="seat-menu-fixed">
-    <label>指定席にする</label>
-    <select id="smNameSelect"><option value="">名簿から選ぶ…</option></select>
-    <input type="text" id="smNameFree" placeholder="または直接入力して固定">
-    <button type="button" class="sm-action" data-action="fixed" id="smFixedBtn">この名前で固定する</button>
+  <div class="text-sm font-bold mb-2.5">せき <span id="smSeatNo" class="text-amber"></span> の設定</div>
+  <button type="button" class="sm-action block w-full text-left border border-line rounded-md px-2.5 py-2 mb-1.5 text-xs hover:border-amber" data-action="normal">通常にする(シャッフル対象)</button>
+  <button type="button" class="sm-action block w-full text-left border border-line rounded-md px-2.5 py-2 mb-1.5 text-xs hover:border-amber" data-action="forced-empty">空席にする(今回だけ空ける)</button>
+  <button type="button" class="sm-action block w-full text-left border border-line rounded-md px-2.5 py-2 mb-1.5 text-xs hover:border-amber" data-action="blocked">使わない席にする(常に除外)</button>
+  <div class="mt-2 pt-2.5 border-t border-dashed border-line">
+    <label class="block text-xs text-muted mb-1.5">指定席にする</label>
+    <select id="smNameSelect" class="w-full bg-ink border border-line rounded-md px-2 py-1.5 text-xs mb-1.5"><option value="">名簿から選ぶ…</option></select>
+    <input type="text" id="smNameFree" placeholder="または直接入力して固定" class="w-full bg-ink border border-line rounded-md px-2 py-1.5 text-xs mb-1.5">
+    <button type="button" class="sm-action block w-full text-left border border-line rounded-md px-2.5 py-2 text-xs hover:border-amber" data-action="fixed" id="smFixedBtn">この名前で固定する</button>
   </div>
-  <button type="button" class="seat-menu-close" id="smClose">閉じる</button>
+  <button type="button" id="smClose" class="mt-2 text-xs text-muted underline">閉じる</button>
 </div>
 
 <script>
@@ -327,6 +220,9 @@
   const rowsInput = document.getElementById('rowsInput');
   const colsInput = document.getElementById('colsInput');
   const extraInput = document.getElementById('extraInput');
+  const aisleInput = document.getElementById('aisleInput');
+  const frontToggle = document.getElementById('frontToggle');
+  const frontMarker = document.getElementById('frontMarker');
   const rowsLabel = document.getElementById('rowsLabel');
   const colsLabel = document.getElementById('colsLabel');
   const rebuildBtn = document.getElementById('rebuildBtn');
@@ -339,7 +235,13 @@
   const capacityInfo = document.getElementById('capacityInfo');
   const modeHint = document.getElementById('modeHint');
   const modeBtns = document.querySelectorAll('.mode-btn[data-mode]');
-  const shapeBtns = document.querySelectorAll('.mode-btn[data-shape]');
+  const shapeBtns = document.querySelectorAll('.shape-btn[data-shape]');
+
+  const avoidRepeatToggle = document.getElementById('avoidRepeatToggle');
+  const ngNameA = document.getElementById('ngNameA');
+  const ngNameB = document.getElementById('ngNameB');
+  const ngAddBtn = document.getElementById('ngAddBtn');
+  const ngList = document.getElementById('ngList');
 
   const seatMenu = document.getElementById('seatMenu');
   const smSeatNo = document.getElementById('smSeatNo');
@@ -348,10 +250,13 @@
   const smClose = document.getElementById('smClose');
 
   let splitMode = 'para';
-  let layoutShape = 'grid'; // 'grid' | 'u'
-  let seats = [];           // {index, row, col, isSeat, state, fixedName, el}
+  let layoutShape = 'grid';
+  let seats = [];
   let dims = { rows: 4, cols: 6 };
   let openSeatIndex = null;
+  let aisleAfterCols = new Set(); // column indices (0-based) after which there's an aisle gap
+  let ngPairs = []; // [[nameA, nameB], ...]
+  let prevAssignment = {}; // name -> seatIndex, from the last successful shuffle
 
   function parseNames(text, mode){
     if(!text.trim()) return [];
@@ -366,10 +271,16 @@
 
   function setMode(mode){
     splitMode = mode;
-    modeBtns.forEach(b => b.classList.toggle('selected', b.dataset.mode === mode));
+    modeBtns.forEach(b => {
+      const on = b.dataset.mode === mode;
+      b.classList.toggle('bg-amber', on);
+      b.classList.toggle('text-amberink', on);
+      b.classList.toggle('font-bold', on);
+      b.classList.toggle('border-amber', on);
+    });
     modeHint.innerHTML = mode === 'para'
-      ? '区切り方: <strong>空行区切り</strong>(段落ごと)。空行がない場合は自動的に1行=1人として読み込みます。'
-      : '区切り方: <strong>1行=1人</strong>として読み込みます。';
+      ? '区切り方: <strong class="text-paper">空行区切り</strong>(段落ごと)。空行がない場合は自動的に1行=1人として読み込みます。'
+      : '区切り方: <strong class="text-paper">1行=1人</strong>として読み込みます。';
     updateCountBadge();
     updateCapacityInfo();
   }
@@ -377,30 +288,59 @@
 
   function setShape(shape){
     layoutShape = shape;
-    shapeBtns.forEach(b => b.classList.toggle('selected', b.dataset.shape === shape));
+    shapeBtns.forEach(b => {
+      const on = b.dataset.shape === shape;
+      b.classList.toggle('bg-amber', on);
+      b.classList.toggle('text-amberink', on);
+      b.classList.toggle('font-bold', on);
+      b.classList.toggle('border-amber', on);
+    });
     if(shape === 'grid'){
       rowsLabel.textContent = '行数(前後)';
       colsLabel.textContent = '列数(左右)';
-    } else {
+    } else if(shape === 'u'){
       rowsLabel.textContent = 'アームの奥行き(縦)';
       colsLabel.textContent = '奥の机数(横幅)';
+    } else {
+      rowsLabel.textContent = '縦の机数';
+      colsLabel.textContent = '横の机数';
     }
   }
   shapeBtns.forEach(b => b.addEventListener('click', () => setShape(b.dataset.shape)));
 
-  nameInput.addEventListener('input', () => { updateCountBadge(); updateCapacityInfo(); });
+  frontToggle.addEventListener('change', () => {
+    frontMarker.classList.toggle('hidden', !frontToggle.checked);
+  });
+
+  nameInput.addEventListener('input', () => { updateCountBadge(); updateCapacityInfo(); refreshNgSelects(); });
 
   function showStatus(msg, type){
     statusMsg.textContent = msg;
-    statusMsg.className = 'status-msg show ' + type;
+    statusMsg.className = 'text-sm px-3 py-2 rounded-md mt-3 ' + (type === 'error' ? 'bg-rose-950 text-rose-300 border border-rose-800' : type === 'warn' ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800');
   }
-  function clearStatus(){ statusMsg.className = 'status-msg'; }
+  function clearStatus(){ statusMsg.className = 'hidden'; }
 
-  // ---------- grid building ----------
   function isSeatCell(r, c, rows, cols, shape){
     if(shape === 'grid') return true;
-    // U shape: seats along left col, right col, and bottom row. top row (r=0) open toward the board.
+    if(shape === 'ro') return (r === 0 || r === rows - 1 || c === 0 || c === cols - 1);
+    // 'u' shape: open at the front (top row), bordered on the other three sides
     return (c === 0 || c === cols - 1 || r === rows - 1);
+  }
+
+  // Parses a comma-separated column-grouping string like "3,3" into aisle
+  // boundary column indices. Returns an empty set if it doesn't add up to `cols`.
+  function parseAisleGroups(colsTotal, str){
+    const boundaries = new Set();
+    if(!str || !str.trim()) return boundaries;
+    const parts = str.split(',').map(s => parseInt(s.trim(), 10)).filter(n => Number.isFinite(n) && n > 0);
+    const sum = parts.reduce((a,b) => a+b, 0);
+    if(!parts.length || sum !== colsTotal) return boundaries;
+    let acc = 0;
+    for(let i = 0; i < parts.length - 1; i++){
+      acc += parts[i];
+      boundaries.add(acc - 1); // aisle sits right after this column index
+    }
+    return boundaries;
   }
 
   function buildGrid(){
@@ -414,7 +354,18 @@
     colsInput.value = cols;
     dims = { rows, cols };
 
-    seatGrid.style.gridTemplateColumns = `repeat(${cols}, minmax(0,1fr))`;
+    aisleAfterCols = parseAisleGroups(cols, aisleInput.value);
+    if(aisleInput.value.trim() && aisleAfterCols.size === 0){
+      showStatus('通路のグループ数の合計が列数と一致しないため、通路は無視されました。', 'warn');
+    }
+
+    // Build an explicit column template so aisle gaps become real empty tracks.
+    const templateParts = [];
+    for(let c = 0; c < cols; c++){
+      templateParts.push('minmax(0,1fr)');
+      if(aisleAfterCols.has(c) && c !== cols - 1) templateParts.push('16px');
+    }
+    seatGrid.style.gridTemplateColumns = templateParts.join(' ');
     seatGrid.innerHTML = '';
     seats = [];
 
@@ -426,19 +377,25 @@
         if(!isSeat){
           desk.className = 'desk ghost-spacer';
           seatGrid.appendChild(desk);
-          continue;
+        } else {
+          const idx = seatCounter++;
+          desk.className = 'desk empty-slot';
+          desk.tabIndex = 0;
+          desk.dataset.index = idx;
+          desk.innerHTML = `<span class="seat-no">${idx+1}</span><span class="seat-name">(空席)</span>`;
+          desk.addEventListener('click', () => openSeatMenuFor(idx, desk));
+          desk.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openSeatMenuFor(idx, desk); }
+          });
+          seatGrid.appendChild(desk);
+          seats.push({ index: idx, row: r, col: c, isSeat: true, state: 'normal', fixedName: null, el: desk });
         }
-        const idx = seatCounter++;
-        desk.className = 'desk empty-slot';
-        desk.tabIndex = 0;
-        desk.dataset.index = idx;
-        desk.innerHTML = `<span class="seat-no">${idx+1}</span><span class="seat-name">(空席)</span>`;
-        desk.addEventListener('click', (e) => openSeatMenuFor(idx, desk));
-        desk.addEventListener('keydown', (e) => {
-          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openSeatMenuFor(idx, desk); }
-        });
-        seatGrid.appendChild(desk);
-        seats.push({ index: idx, row: r, col: c, isSeat: true, state: 'normal', fixedName: null, el: desk });
+        if(aisleAfterCols.has(c) && c !== cols - 1){
+          const spacer = document.createElement('div');
+          spacer.className = 'aisle-gap';
+          spacer.setAttribute('aria-hidden', 'true');
+          seatGrid.appendChild(spacer);
+        }
       }
     }
     clearStatus();
@@ -446,7 +403,6 @@
     updateCapacityInfo();
   }
 
-  // ---------- auto-fit ----------
   function autoFit(){
     const names = currentNames();
     const extra = Math.max(0, parseInt(extraInput.value, 10) || 0);
@@ -457,11 +413,20 @@
       const rows = Math.max(1, Math.ceil(needed / cols));
       rowsInput.value = Math.min(12, rows);
       colsInput.value = Math.min(12, cols);
-    } else {
+    } else if(layoutShape === 'u'){
       const bridgeWidth = Math.max(2, Math.ceil(Math.sqrt(needed)));
       const armDepth = Math.max(1, Math.ceil((needed - bridgeWidth) / 2));
       rowsInput.value = Math.min(12, armDepth + 1);
       colsInput.value = Math.min(12, bridgeWidth);
+    } else {
+      // 'ro' (hollow rectangle): perimeter = 2*(rows+cols) - 4
+      let cols = Math.max(3, Math.ceil(Math.sqrt(needed)) + 1);
+      let rows = Math.max(3, Math.ceil((needed - 2*cols + 4) / 2) + 2);
+      while(2*(rows+cols) - 4 < needed && rows < 12 && cols < 12){
+        if(rows <= cols) rows++; else cols++;
+      }
+      rowsInput.value = Math.min(12, rows);
+      colsInput.value = Math.min(12, cols);
     }
     buildGrid();
     showStatus(`名前${names.length}人＋余分${extra}席 に合わせて座席を作りました。`, 'ok');
@@ -469,18 +434,21 @@
   autoFitBtn.addEventListener('click', autoFit);
   rebuildBtn.addEventListener('click', buildGrid);
 
-  // ---------- seat menu ----------
   function openSeatMenuFor(idx, deskEl){
     openSeatIndex = idx;
     const seat = seats.find(s => s.index === idx);
     smSeatNo.textContent = (idx + 1);
 
     seatMenu.querySelectorAll('.sm-action[data-action]').forEach(btn => {
-      btn.classList.toggle('current', btn.dataset.action === seat.state);
+      const on = btn.dataset.action === seat.state;
+      btn.classList.toggle('bg-amber', on);
+      btn.classList.toggle('text-amberink', on);
+      btn.classList.toggle('font-bold', on);
+      btn.classList.toggle('border-amber', on);
     });
 
     smNameSelect.innerHTML = '<option value="">名簿から選ぶ…</option>';
-    currentNames().forEach((n, i) => {
+    currentNames().forEach((n) => {
       const opt = document.createElement('option');
       opt.value = n;
       opt.textContent = n;
@@ -571,7 +539,6 @@
   }
   resetStatesBtn.addEventListener('click', resetStates);
 
-  // ---------- capacity info ----------
   function updateCapacityInfo(){
     if(!seats.length){ capacityInfo.textContent = ''; return; }
     const names = currentNames();
@@ -580,12 +547,70 @@
     const blockedCount = seats.filter(s => s.state === 'blocked').length;
     const forcedEmptyCount = seats.filter(s => s.state === 'forced-empty').length;
     capacityInfo.innerHTML =
-      `席の内訳: 通常席 <strong>${normalCount}</strong> ・ 指定席 <strong>${fixedCount}</strong> ・ ` +
-      `空席 <strong>${forcedEmptyCount}</strong> ・ 使わない席 <strong>${blockedCount}</strong>` +
-      `<br>名簿の人数: <strong>${names.length}</strong>人`;
+      `席の内訳: 通常席 <strong class="text-paper">${normalCount}</strong> ・ 指定席 <strong class="text-paper">${fixedCount}</strong> ・ ` +
+      `空席 <strong class="text-paper">${forcedEmptyCount}</strong> ・ 使わない席 <strong class="text-paper">${blockedCount}</strong>` +
+      `<br>名簿の人数: <strong class="text-paper">${names.length}</strong>人`;
   }
 
-  // ---------- shuffle ----------
+  // ---- NG pairs (people who shouldn't sit next to each other) ----
+  function refreshNgSelects(){
+    const names = currentNames();
+    [ngNameA, ngNameB].forEach(sel => {
+      const keep = sel.value;
+      sel.innerHTML = '<option value="">名前を選ぶ…</option>';
+      names.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n;
+        opt.textContent = n;
+        sel.appendChild(opt);
+      });
+      if(names.includes(keep)) sel.value = keep;
+    });
+  }
+  function renderNgList(){
+    ngList.innerHTML = '';
+    if(!ngPairs.length){
+      const p = document.createElement('span');
+      p.className = 'text-xs text-muted';
+      p.textContent = 'NGペアは登録されていません。';
+      ngList.appendChild(p);
+      return;
+    }
+    ngPairs.forEach((pair, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'ng-chip';
+      chip.innerHTML = `<span>${escapeHtml(pair[0])} × ${escapeHtml(pair[1])}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', 'このNGペアを削除');
+      removeBtn.addEventListener('click', () => {
+        ngPairs.splice(i, 1);
+        renderNgList();
+      });
+      chip.appendChild(removeBtn);
+      ngList.appendChild(chip);
+    });
+  }
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  ngAddBtn.addEventListener('click', () => {
+    const a = ngNameA.value, b = ngNameB.value;
+    if(!a || !b || a === b){
+      showStatus('2人の異なる名前を選んでからNGペアに追加してください。', 'error');
+      return;
+    }
+    const exists = ngPairs.some(p => (p[0]===a && p[1]===b) || (p[0]===b && p[1]===a));
+    if(exists){
+      showStatus('そのNGペアはすでに登録されています。', 'error');
+      return;
+    }
+    ngPairs.push([a, b]);
+    renderNgList();
+  });
+  avoidRepeatToggle.addEventListener('change', () => {}); // read directly at shuffle time
+
   function shuffleArray(arr){
     const a = arr.slice();
     for(let i = a.length - 1; i > 0; i--){
@@ -593,6 +618,37 @@
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  // Two seats count as neighbors if they're directly beside each other in the
+  // same row (and no aisle sits between them) or directly in front/behind in
+  // the same column.
+  function seatsAreAdjacent(seatA, seatB){
+    if(seatA.row === seatB.row){
+      const lo = Math.min(seatA.col, seatB.col);
+      const hi = Math.max(seatA.col, seatB.col);
+      if(hi - lo === 1 && !aisleAfterCols.has(lo)) return true;
+      return false;
+    }
+    if(seatA.col === seatB.col && Math.abs(seatA.row - seatB.row) === 1) return true;
+    return false;
+  }
+
+  // Counts how many constraints an assignment (name -> seat) violates:
+  // NG pairs seated adjacently, plus (softly) people placed back in their
+  // exact previous seat when "avoid repeat" is on.
+  function countViolations(assignment, avoidRepeat){
+    let violations = 0;
+    ngPairs.forEach(([a, b]) => {
+      const seatA = assignment[a], seatB = assignment[b];
+      if(seatA && seatB && seatsAreAdjacent(seatA, seatB)) violations++;
+    });
+    if(avoidRepeat){
+      Object.keys(assignment).forEach(name => {
+        if(prevAssignment[name] !== undefined && prevAssignment[name] === assignment[name].index) violations++;
+      });
+    }
+    return violations;
   }
 
   function doShuffle(){
@@ -620,32 +676,54 @@
       return;
     }
 
-    // apply fixed seats immediately
+    const avoidRepeat = avoidRepeatToggle.checked;
+    const relevantNgCount = ngPairs.filter(([a,b]) => pool.includes(a) && pool.includes(b)).length;
+
+    // Try several random layouts and keep the one with the fewest constraint
+    // violations (0 if everything can be satisfied).
+    let best = null;
+    const maxAttempts = (relevantNgCount > 0 || avoidRepeat) ? 400 : 1;
+    for(let attempt = 0; attempt < maxAttempts; attempt++){
+      const seatOrderTry = shuffleArray(normalSeats.map(s => s.index));
+      const nameOrderTry = shuffleArray(pool);
+      const assignment = {};
+      nameOrderTry.forEach((name, i) => {
+        const seat = seats.find(s => s.index === seatOrderTry[i]);
+        assignment[name] = seat;
+      });
+      const v = countViolations(assignment, avoidRepeat);
+      if(!best || v < best.violations){
+        best = { seatOrder: seatOrderTry, nameOrder: nameOrderTry, violations: v };
+        if(v === 0) break;
+      }
+    }
+
+    const seatOrder = best.seatOrder;
+    const nameOrder = best.nameOrder;
+
     fixedSeats.forEach(seat => {
       seat.el.classList.remove('empty-slot');
       const nameEl = seat.el.querySelector('.seat-name');
       nameEl.textContent = seat.fixedName;
       seat.el.classList.add('settling');
-      setTimeout(() => seat.el.classList.remove('settling'), 340);
+      setTimeout(() => seat.el.classList.remove('settling'), 300);
     });
 
-    // forced-empty seats: keep their label as-is (already "空席")
     forcedEmptySeats.forEach(seat => {
       seat.el.querySelector('.seat-name').textContent = '空席';
     });
 
-    const seatOrder = shuffleArray(normalSeats.map(s => s.index));
-    const nameOrder = shuffleArray(pool);
     const displayPool = pool.length ? pool : ['?'];
 
-    // reset normal seats visually before animating
     normalSeats.forEach(seat => {
       seat.el.querySelector('.seat-name').textContent = '';
     });
 
+    const newAssignment = {};
     nameOrder.forEach((finalName, order) => {
       const seatIdx = seatOrder[order];
       const seat = seats.find(s => s.index === seatIdx);
+      newAssignment[finalName] = seatIdx;
       const nameEl = seat.el.querySelector('.seat-name');
       let ticks = 0;
       const maxTicks = 5 + Math.floor(Math.random()*3);
@@ -658,12 +736,11 @@
           nameEl.textContent = finalName;
           nameEl.classList.remove('cycling');
           seat.el.classList.add('settling');
-          setTimeout(() => seat.el.classList.remove('settling'), 340);
+          setTimeout(() => seat.el.classList.remove('settling'), 300);
         }
       }, 55);
     });
 
-    // remaining unassigned normal seats -> empty
     const usedSeatIdx = new Set(seatOrder.slice(0, nameOrder.length));
     normalSeats.forEach(seat => {
       if(!usedSeatIdx.has(seat.index)){
@@ -671,15 +748,23 @@
       }
     });
 
-    showStatus(`${nameOrder.length}人を配置しました${fixedSeats.length ? `(指定席 ${fixedSeats.length}人を除く)` : ''}。`, 'ok');
+    fixedSeats.forEach(seat => { newAssignment[seat.fixedName] = seat.index; });
+    prevAssignment = newAssignment;
+
+    if(best.violations === 0){
+      showStatus(`${nameOrder.length}人を配置しました${fixedSeats.length ? `(指定席 ${fixedSeats.length}人を除く)` : ''}。`, 'ok');
+    } else {
+      showStatus(`${nameOrder.length}人を配置しましたが、条件を完全には満たせず ${best.violations}件の希望が守れませんでした。`, 'warn');
+    }
   }
   shuffleBtn.addEventListener('click', doShuffle);
 
-  // init
   setMode('para');
   setShape('grid');
   buildGrid();
   updateCountBadge();
+  refreshNgSelects();
+  renderNgList();
 })();
 </script>
 

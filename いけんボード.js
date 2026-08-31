@@ -1,9 +1,9 @@
 (function(){
   const CATEGORIES = [
-    { id: 'agree',    label: '賛成',        color: '#cdeccd' },
-    { id: 'disagree', label: '反対',        color: '#f6cdd0' },
-    { id: 'question', label: '疑問',        color: '#cfe0f5' },
-    { id: 'idea',     label: 'アイデア・意見', color: '#fbe9ad' }
+    { id: 'agree',    label: '賛成',        color: '#10b981' },
+    { id: 'disagree', label: '反対',        color: '#f43f5e' },
+    { id: 'question', label: '疑問',        color: '#3b82f6' },
+    { id: 'idea',     label: 'アイデア・意見', color: '#f59e0b' }
   ];
 
   const nameInput = document.getElementById('nameInput');
@@ -30,9 +30,11 @@
     CATEGORIES.forEach(cat => {
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'chip' + (cat.id === selectedCategory ? ' selected' : '');
+      const selected = cat.id === selectedCategory;
+      chip.className = 'chip inline-flex items-center gap-1.5 border rounded-md px-3 py-1.5 text-xs ' +
+        (selected ? 'border-amber bg-amber text-amberink font-bold' : 'border-[#323236] text-[#98979c] hover:border-[#46464c] hover:text-[#f5f4f0]');
       chip.dataset.cat = cat.id;
-      chip.innerHTML = `<span class="sw" style="background:${cat.color}"></span>${cat.label}`;
+      chip.innerHTML = `<span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:${cat.color}"></span>${cat.label}`;
       chip.addEventListener('click', () => {
         selectedCategory = cat.id;
         buildChips();
@@ -46,11 +48,13 @@
     CATEGORIES.forEach(cat => {
       const n = notes.filter(note => note.category === cat.id).length;
       const span = document.createElement('span');
-      span.innerHTML = `<span class="sw" style="background:${cat.color}"></span>${cat.label} ${n}`;
+      span.className = 'inline-flex items-center gap-1.5 border border-[#323236] rounded-md px-2.5 py-1 text-xs text-[#98979c] font-mono';
+      span.innerHTML = `<span class="w-2 h-2 rounded-sm inline-block" style="background:${cat.color}"></span>${cat.label} ${n}`;
       countBadges.appendChild(span);
     });
     const total = document.createElement('span');
-    total.innerHTML = `<strong>合計 ${notes.length}</strong>`;
+    total.className = 'inline-flex items-center border border-[#46464c] rounded-md px-2.5 py-1 text-xs text-[#f5f4f0] font-bold font-mono';
+    total.textContent = `合計 ${notes.length}`;
     countBadges.appendChild(total);
   }
 
@@ -60,10 +64,11 @@
 
   function showStatus(msg, type){
     statusMsg.textContent = msg;
-    statusMsg.className = 'status-msg show ' + type;
+    statusMsg.className = 'text-sm px-3 py-2 rounded-md mt-3 border ' +
+      (type === 'error' ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800');
     window.clearTimeout(showStatus._t);
     showStatus._t = window.setTimeout(() => {
-      statusMsg.className = 'status-msg';
+      statusMsg.className = 'hidden';
     }, 2600);
   }
 
@@ -71,7 +76,7 @@
     const rect = board.getBoundingClientRect();
     const w = Math.max(rect.width, 320);
     const h = Math.max(rect.height, 400);
-    const noteW = 170, noteH = 130;
+    const noteW = 168, noteH = 120;
     const x = 16 + Math.random() * Math.max(20, (w - noteW - 32));
     const y = 16 + Math.random() * Math.max(20, (h - noteH - 32));
     return { x, y };
@@ -116,16 +121,15 @@
   function renderNote(note){
     const cat = catById(note.category);
     const el = document.createElement('div');
-    el.className = 'note';
+    el.className = 'note absolute w-[168px] min-h-[120px] rounded-md p-3 pt-4 cursor-grab select-none text-sm font-medium leading-snug text-white';
     el.style.left = note.x + 'px';
     el.style.top = note.y + 'px';
     el.style.background = cat.color;
-    el.style.transform = `rotate(${note.rotate}deg)`;
     el.style.zIndex = note.z;
     el.innerHTML = `
-      <button type="button" class="note-del" aria-label="この意見を削除" title="削除">×</button>
-      ${note.name ? `<div class="note-name">${escapeHtml(note.name)}</div>` : ''}
-      <div class="note-text">${escapeHtml(note.text)}</div>
+      <button type="button" class="note-del absolute top-1 right-1.5 text-white/70 hover:text-white text-base leading-none px-1" aria-label="この意見を削除" title="削除">×</button>
+      ${note.name ? `<div class="text-[10px] text-white/75 mb-1 font-mono">${escapeHtml(note.name)}</div>` : ''}
+      <div class="break-words whitespace-pre-wrap">${escapeHtml(note.text)}</div>
     `;
     el.querySelector('.note-del').addEventListener('click', () => {
       notes = notes.filter(n => n.id !== note.id);
@@ -161,7 +165,6 @@
       category: selectedCategory,
       x: pos.x,
       y: pos.y,
-      rotate: Math.round((Math.random() * 8 - 4) * 10) / 10,
       z: ++zCounter
     };
     notes.push(note);
@@ -186,7 +189,7 @@
   function tidyUp(){
     if(!notes.length) return;
     const boardRect = board.getBoundingClientRect();
-    const noteW = 170, gap = 16;
+    const noteW = 168, gap = 14;
     const cols = Math.max(1, Math.floor((boardRect.width - gap) / (noteW + gap)));
     let order = [];
     CATEGORIES.forEach(cat => {
@@ -196,12 +199,10 @@
       const col = i % cols;
       const row = Math.floor(i / cols);
       note.x = gap + col * (noteW + gap);
-      note.y = gap + row * (150);
-      note.rotate = Math.round((Math.random() * 4 - 2) * 10) / 10;
+      note.y = gap + row * 136;
       if(note.el){
         note.el.style.left = note.x + 'px';
         note.el.style.top = note.y + 'px';
-        note.el.style.transform = `rotate(${note.rotate}deg)`;
       }
     });
     showStatus('カテゴリごとに整頓しました。', 'ok');

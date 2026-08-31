@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPツールズ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Zen Kaku Gothic New', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace']
+        },
+        colors: {
+          ink: '#121214',
+          panel: '#1a1a1d',
+          line: '#323236',
+          linestrong: '#46464c',
+          paper: '#f5f4f0',
+          muted: '#98979c',
+          amber: '#ffb020',
+          amberdark: '#d99414',
+          amberink: '#1a1200'
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="font-sans bg-ink text-paper antialiased">
+
+<header class="border-b border-line relative">
+  <div class="absolute top-0 left-0 right-0 h-[3px] bg-amber"></div>
+  <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+    <div class="flex items-baseline gap-3">
+      <span class="w-2.5 h-2.5 bg-amber inline-block"></span>
+      <span class="text-xl font-black tracking-tight">RPツールズ</span>
+    </div>
+    <span class="font-mono text-[11px] tracking-[0.2em] text-muted">CLASSROOM TOOLKIT</span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-16">
+  <h1 class="text-2xl font-black mb-2">ツール一覧</h1>
+  <p class="text-sm text-muted mb-10">使いたいツールを選んでください。</p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <a href="席替えツール.html" class="group block bg-panel border border-line hover:border-amber rounded-md p-6 transition-colors">
+      <span class="text-2xl">🪑</span>
+      <h2 class="mt-4 font-bold text-base group-hover:text-amber">席替えツール</h2>
+      <p class="mt-1.5 text-sm text-muted leading-relaxed">名簿を貼り付けて座席の形を決めるだけ。空席・使わない席・指定席・通路・NGペアにも対応しています。</p>
+    </a>
+
+    <a href="いけんボード.html" class="group block bg-panel border border-line hover:border-amber rounded-md p-6 transition-colors">
+      <span class="text-2xl">💬</span>
+      <h2 class="mt-4 font-bold text-base group-hover:text-amber">いけんボード</h2>
+      <p class="mt-1.5 text-sm text-muted leading-relaxed">話し合いで出た意見を付箋にして貼るボード。賛成・反対・疑問・アイデアで色分けできます。</p>
+    </a>
+
+    <a href="グループ活動ボード.html" class="group block bg-panel border border-line hover:border-amber rounded-md p-6 transition-colors">
+      <span class="text-2xl">🧩</span>
+      <h2 class="mt-4 font-bold text-base group-hover:text-amber">グループ活動ボード</h2>
+      <p class="mt-1.5 text-sm text-muted leading-relaxed">総合的な学習などで、各班の「今やっていること」「次の予定」「進み具合」がひと目でわかるボードです。</p>
+    </a>
+
+    <div class="bg-panel/40 border border-dashed border-line rounded-md p-6 text-muted">
+      <span class="text-2xl grayscale opacity-50">🎯</span>
+      <h2 class="mt-4 font-bold text-base text-paper/50">くじ引き機</h2>
+      <p class="mt-1.5 text-sm leading-relaxed font-mono text-[11px] tracking-wide">準備中</p>
+    </div>
+
+    <div class="bg-panel/40 border border-dashed border-line rounded-md p-6 text-muted">
+      <span class="text-2xl grayscale opacity-50">⏱</span>
+      <h2 class="mt-4 font-bold text-base text-paper/50">号令タイマー</h2>
+      <p class="mt-1.5 text-sm leading-relaxed font-mono text-[11px] tracking-wide">準備中</p>
+    </div>
+
+    <div class="bg-panel/40 border border-dashed border-line rounded-md p-6 text-muted">
+      <span class="text-2xl grayscale opacity-50">🎒</span>
+      <h2 class="mt-4 font-bold text-base text-paper/50">持ち物チェックリスト</h2>
+      <p class="mt-1.5 text-sm leading-relaxed font-mono text-[11px] tracking-wide">準備中</p>
+    </div>
+  </div>
+</main>
+
+<footer class="border-t border-line py-8">
+  <p class="text-center text-xs text-muted font-mono tracking-wide">RPツールズ</p>
+</footer>
+
+</body>
+</html>

@@ -1,1 +1,0 @@
-# Gakko_tu-ru
