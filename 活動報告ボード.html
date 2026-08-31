@@ -3,268 +3,1465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RPツールズ | 活動報告</title>
+
+<title>RPツールズ | グループ活動ボード</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Zen Kaku Gothic New', 'sans-serif'],
-          mono: ['JetBrains Mono', 'monospace']
-        },
-        colors: {
-          ink: '#121214',
-          panel: '#1a1a1d',
-          panel2: '#202024',
-          line: '#323236',
-          linestrong: '#46464c',
-          paper: '#f5f4f0',
-          muted: '#98979c',
-          amber: '#ffb020',
-          amberdark: '#d99414',
-          amberink: '#1a1200'
-        }
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Zen Kaku Gothic New', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace']
+      },
+      colors: {
+        ink: '#121214',
+        panel: '#1a1a1d',
+        panel2: '#202024',
+        line: '#323236',
+        linestrong: '#46464c',
+        paper: '#f5f4f0',
+        muted: '#98979c',
+        amber: '#ffb020',
+        amberdark: '#d99414',
+        amberink: '#1a1200'
       }
     }
   }
+}
 </script>
+
 <style>
-  body{ background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1.4px); background-size: 24px 24px; }
-  input[type=text], textarea{ background-color:#111113; color:#f5f4f0; }
-  input[type=text]::placeholder, textarea::placeholder{ color:#65656b; }
-  textarea{ resize:vertical; }
+body {
+  background-image: radial-gradient(
+    rgba(255,255,255,0.035) 1px,
+    transparent 1.4px
+  );
+  background-size: 24px 24px;
+}
 
-  .status-chip{
-    display:inline-flex;align-items:center;gap:6px;
-    border:1px solid #323236;background:#111113;color:#98979c;
-    padding:6px 11px;border-radius:999px;font-size:12px;cursor:pointer;
-    font-family:inherit;transition:all .15s ease;
-  }
-  .status-chip:hover{border-color:#46464c;color:#f5f4f0;}
-  .status-chip.on-todo.selected{border-color:#65656b;background:rgba(101,101,107,0.18);color:#e5e4e2;font-weight:700;}
-  .status-chip.on-doing.selected{border-color:#ffb020;background:rgba(255,176,32,0.12);color:#ffd27a;font-weight:700;}
-  .status-chip.on-done.selected{border-color:#34d399;background:rgba(52,211,153,0.12);color:#6ee7b7;font-weight:700;}
+input[type="text"],
+textarea {
+  background-color: #111113;
+  color: #f5f4f0;
+}
 
-  .group-card{border-top-width:3px;}
-  .group-card.state-todo{border-top-color:#65656b;}
-  .group-card.state-doing{border-top-color:#ffb020;}
-  .group-card.state-done{border-top-color:#34d399;}
+input[type="text"]::placeholder,
+textarea::placeholder {
+  color: #65656b;
+}
 
-  .field-label{font-size:11px;color:#98979c;font-weight:700;letter-spacing:.04em;margin-bottom:5px;display:block;}
+textarea {
+  resize: vertical;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #323236;
+  background: #111113;
+  color: #98979c;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s ease;
+}
+
+.status-chip:hover {
+  border-color: #46464c;
+  color: #f5f4f0;
+}
+
+.status-chip.on-todo.selected {
+  border-color: #65656b;
+  background: rgba(101,101,107,0.18);
+  color: #e5e4e2;
+  font-weight: 700;
+}
+
+.status-chip.on-doing.selected {
+  border-color: #ffb020;
+  background: rgba(255,176,32,0.12);
+  color: #ffd27a;
+  font-weight: 700;
+}
+
+.status-chip.on-done.selected {
+  border-color: #34d399;
+  background: rgba(52,211,153,0.12);
+  color: #6ee7b7;
+  font-weight: 700;
+}
+
+.group-card {
+  border-top-width: 3px;
+}
+
+.group-card.state-todo {
+  border-top-color: #65656b;
+}
+
+.group-card.state-doing {
+  border-top-color: #ffb020;
+}
+
+.group-card.state-done {
+  border-top-color: #34d399;
+}
+
+.field-label {
+  font-size: 11px;
+  color: #98979c;
+  font-weight: 700;
+  letter-spacing: .04em;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.optional-label {
+  color: #65656b;
+  font-size: 10px;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.edit-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #46464c;
+  background: #111113;
+  color: #98979c;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.display-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.optional-display {
+  border-top: 1px solid #323236;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.time-display {
+  color: #65656b;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
 </style>
 </head>
+
 <body class="font-sans bg-ink text-paper antialiased">
 
 <header class="border-b border-line relative">
+
   <div class="absolute top-0 left-0 right-0 h-[3px] bg-amber"></div>
+
   <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between flex-wrap gap-3">
+
     <a href="index.html" class="flex items-baseline gap-3 hover:opacity-80">
       <span class="w-2.5 h-2.5 bg-amber inline-block"></span>
       <span class="text-lg font-black tracking-tight">RPツールズ</span>
     </a>
+
     <nav class="flex gap-6 text-sm">
-      <a href="席替えツール.html" class="text-muted hover:text-paper pb-1">席替えツール</a>
-      <a href="いけんボード.html" class="text-muted hover:text-paper pb-1">いけんボード</a>
-      <span class="font-bold text-amber border-b-2 border-amber pb-1">活動報告</span>
+
+      <a href="席替えツール.html"
+         class="text-muted hover:text-paper pb-1">
+        席替えツール
+      </a>
+
+      <a href="いけんボード.html"
+         class="text-muted hover:text-paper pb-1">
+        いけんボード
+      </a>
+
+      <span class="font-bold text-amber border-b-2 border-amber pb-1">
+        グループ活動ボード
+      </span>
+
     </nav>
+
   </div>
 </header>
 
+
 <main class="max-w-6xl mx-auto px-6 py-10">
-  <h1 class="text-xl font-black mb-1">🧩 活動報告</h1>
-  <p class="text-sm text-muted mb-1 leading-relaxed">各班の活動内容を付箋形式で記録する活動報告ボードです。同じ班から何枚でも報告を投稿できます。</p>
-  <p class="text-xs text-muted/70 font-mono mb-8">※ この画面のメモリー上だけで動くツールです。ページを閉じたり再読み込みすると内容は消えます。</p>
+
+  <h1 class="text-xl font-black mb-1">
+    🧩 グループ活動ボード
+  </h1>
+
+  <p class="text-sm text-muted mb-1 leading-relaxed">
+    グループごとの活動報告を付箋形式で共有できます。
+  </p>
+
+  <p class="text-xs text-muted/70 font-mono mb-8">
+    ※ この画面のメモリー上だけで動くツールです。ページを閉じたり再読み込みすると内容は消えます。
+  </p>
+
+
+  <!-- 投稿フォーム -->
 
   <section class="bg-panel border border-line rounded-md p-5 mb-6">
-    <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span class="font-mono text-amber text-xs">01</span>活動報告を追加する</h2>
-    <div class="flex items-end gap-3 flex-wrap">
-      <div class="flex-1 min-w-[200px]">
-        <label for="groupNameInput" class="field-label">班の名前</label>
-        <input type="text" id="groupNameInput" placeholder="例) 1班、環境チーム、など" class="w-full border border-line rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber">
-      </div>
-      <button type="button" id="addGroupBtn" class="px-4 py-2 text-sm font-bold text-amberink bg-amber rounded-md hover:brightness-110">＋ 報告を追加</button>
+
+    <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
+      <span class="font-mono text-amber text-xs">01</span>
+      活動報告を投稿する
+    </h2>
+
+
+    <!-- グループ名 -->
+
+    <div class="mb-4">
+
+      <label for="groupNameInput" class="field-label">
+        グループ名
+      </label>
+
+      <input
+        type="text"
+        id="groupNameInput"
+        placeholder="例）1班、環境チーム"
+        class="w-full border border-line rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber"
+      >
+
     </div>
-    <div id="statusMsg" class="hidden text-sm px-3 py-2 rounded-md mt-3"></div>
+
+
+    <!-- 活動内容 -->
+
+    <div class="mb-4">
+
+      <label for="activityInput" class="field-label">
+        活動内容
+      </label>
+
+      <textarea
+        id="activityInput"
+        placeholder="例）地域の環境問題について調査しています"
+        class="w-full border border-line rounded-md p-2 text-sm min-h-[90px] focus:outline-none focus:border-amber"
+      ></textarea>
+
+    </div>
+
+
+    <!-- 担当者・目的 -->
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+      <div>
+
+        <label for="personInput" class="field-label">
+          担当者
+          <span class="optional-label">任意</span>
+        </label>
+
+        <input
+          type="text"
+          id="personInput"
+          placeholder="例）山田、佐藤"
+          class="w-full border border-line rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label for="purposeInput" class="field-label">
+          目的
+          <span class="optional-label">任意</span>
+        </label>
+
+        <input
+          type="text"
+          id="purposeInput"
+          placeholder="例）地域の課題を知るため"
+          class="w-full border border-line rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="flex justify-end">
+
+      <button
+        type="button"
+        id="addPostBtn"
+        class="px-4 py-2 text-sm font-bold text-amberink bg-amber rounded-md hover:brightness-110"
+      >
+        ＋ 付箋を投稿
+      </button>
+
+    </div>
+
+
+    <div
+      id="statusMsg"
+      class="hidden text-sm px-3 py-2 rounded-md mt-3"
+    ></div>
+
   </section>
 
+
+  <!-- 件数 -->
+
   <div class="flex items-center gap-3 flex-wrap mb-4">
-    <div class="flex gap-2 flex-wrap text-xs" id="countBadges"></div>
+
+    <div
+      id="countBadges"
+      class="flex gap-2 flex-wrap text-xs"
+    ></div>
+
   </div>
 
-  <div id="boardEmpty" class="border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono">
-    まだ活動報告がありません。上のフォームから最初の報告を追加しましょう。
+
+  <!-- 空状態 -->
+
+  <div
+    id="boardEmpty"
+    class="border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono"
+  >
+    まだ活動報告がありません。上のフォームから投稿してください。
   </div>
 
-  <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+  <!-- 付箋一覧 -->
+
+  <div
+    id="cardsGrid"
+    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+  ></div>
+
 </main>
 
+
 <footer class="border-t border-line py-8 mt-10">
-  <p class="text-center text-xs text-muted font-mono tracking-wide">RPツールズ</p>
+
+  <p class="text-center text-xs text-muted font-mono tracking-wide">
+    RPツールズ
+  </p>
+
 </footer>
 
+
 <script>
-(function(){
+(function () {
+
+  /* =========================================
+     DOM
+  ========================================= */
+
   const groupNameInput = document.getElementById('groupNameInput');
-  const addGroupBtn = document.getElementById('addGroupBtn');
+  const activityInput = document.getElementById('activityInput');
+  const personInput = document.getElementById('personInput');
+  const purposeInput = document.getElementById('purposeInput');
+
+  const addPostBtn = document.getElementById('addPostBtn');
+
   const statusMsg = document.getElementById('statusMsg');
   const cardsGrid = document.getElementById('cardsGrid');
   const boardEmpty = document.getElementById('boardEmpty');
   const countBadges = document.getElementById('countBadges');
 
-  let reports = [];
-  let reportSeq = 0;
 
-  function showStatus(msg, type){
-    statusMsg.textContent = msg;
-    statusMsg.className =
-      'text-sm px-3 py-2 rounded-md mt-3 ' +
-      (type === 'error'
-        ? 'bg-rose-950 text-rose-300 border border-rose-800'
-        : 'bg-emerald-950 text-emerald-300 border border-emerald-800');
-    window.clearTimeout(showStatus._t);
-    showStatus._t = window.setTimeout(() => {
-      statusMsg.className = 'hidden';
-    }, 2600);
-  }
+  /* =========================================
+     進行状況
+  ========================================= */
 
-  function nowLabel(){
-    return new Date().toLocaleTimeString('ja-JP', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
+  const STATUSES = [
+    {
+      id: 'todo',
+      label: '未着手'
+    },
+    {
+      id: 'doing',
+      label: '進行中'
+    },
+    {
+      id: 'done',
+      label: '完了'
+    }
+  ];
 
-  function updateEmptyState(){
-    boardEmpty.style.display = reports.length ? 'none' : 'block';
-  }
 
-  function updateCountBadges(){
-    countBadges.innerHTML = '';
+  /* =========================================
+     データ
+  ========================================= */
 
-    const groups = [...new Set(reports.map(r => r.groupName))];
+  let posts = [];
+  let postSeq = 0;
 
-    const total = document.createElement('span');
-    total.className =
-      'inline-flex items-center border border-linestrong rounded-md px-2.5 py-1 text-paper font-bold font-mono';
-    total.textContent = `報告 ${reports.length}件`;
-    countBadges.appendChild(total);
 
-    groups.forEach(name => {
-      const n = reports.filter(r => r.groupName === name).length;
-      const span = document.createElement('span');
-      span.className =
-        'inline-flex items-center gap-1.5 border border-line rounded-md px-2.5 py-1 text-muted font-mono';
-      span.textContent = `${name} ${n}件`;
-      countBadges.appendChild(span);
-    });
-  }
+  /* =========================================
+     現在時刻
+  ========================================= */
 
-  function escapeHtml(str){
-    return String(str)
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;');
-  }
+  function getDateTime() {
 
-  function removeReport(report){
-    reports = reports.filter(r => r.id !== report.id);
-    report.cardEl.remove();
-    updateEmptyState();
-    updateCountBadges();
-  }
+    const now = new Date();
 
-  function buildCard(report){
-    const card = document.createElement('div');
-    card.className =
-      'group-card bg-panel border border-line rounded-md p-4';
-
-    card.innerHTML = `
-      <div class="flex items-start justify-between gap-2 mb-3">
-        <div>
-          <div class="text-xs text-muted font-mono mb-1">活動報告</div>
-          <div class="font-bold text-base">${escapeHtml(report.groupName)}</div>
-        </div>
-        <button type="button"
-          class="delete-btn text-muted hover:text-rose-400 text-sm shrink-0"
-          aria-label="この報告を削除"
-          title="削除">✕</button>
-      </div>
-
-      <div class="mb-3">
-        <label class="field-label">活動内容</label>
-        <textarea
-          class="report-field w-full border border-line rounded-md p-2 text-sm min-h-[110px] focus:outline-none focus:border-amber"
-          placeholder="例) ○○について資料を集め、発表内容を整理しました。">${escapeHtml(report.text)}</textarea>
-      </div>
-
-      <div class="updated-label text-[11px] text-muted/70 font-mono">
-        投稿 ${escapeHtml(report.createdAt)}
-      </div>
-    `;
-
-    card.querySelector('.report-field').addEventListener('input', e => {
-      report.text = e.target.value;
-    });
-
-    card.querySelector('.delete-btn').addEventListener('click', () => {
-      const ok = window.confirm(
-        `「${report.groupName}」のこの活動報告を削除します。よろしいですか?`
+    const date =
+      now.toLocaleDateString(
+        'ja-JP',
+        {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }
       );
-      if(ok) removeReport(report);
-    });
 
-    report.cardEl = card;
-    return card;
+    const time =
+      now.toLocaleTimeString(
+        'ja-JP',
+        {
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+
+    return date + ' ' + time;
+
   }
 
-  function addReport(groupName){
-    const report = {
-      id: 'r' + (++reportSeq),
-      groupName,
-      text: '',
-      createdAt: nowLabel()
-    };
 
-    reports.push(report);
+  /* =========================================
+     メッセージ
+  ========================================= */
 
-    const card = buildCard(report);
-    cardsGrid.appendChild(card);
+  function showStatus(message, type) {
 
-    updateEmptyState();
-    updateCountBadges();
+    statusMsg.textContent = message;
 
-    // 新しく追加した報告の入力欄へ自動フォーカス
-    card.querySelector('.report-field').focus();
-  }
+    if (type === 'error') {
 
-  addGroupBtn.addEventListener('click', () => {
-    const name = groupNameInput.value.trim();
+      statusMsg.className =
+        'text-sm px-3 py-2 rounded-md mt-3 ' +
+        'bg-rose-950 text-rose-300 border border-rose-800';
 
-    if(!name){
-      showStatus('班の名前を入力してください。', 'error');
-      groupNameInput.focus();
-      return;
+    } else {
+
+      statusMsg.className =
+        'text-sm px-3 py-2 rounded-md mt-3 ' +
+        'bg-emerald-950 text-emerald-300 border border-emerald-800';
+
     }
 
-    addReport(name);
-    groupNameInput.value = '';
-    groupNameInput.focus();
-  });
+    clearTimeout(showStatus.timer);
 
-  groupNameInput.addEventListener('keydown', e => {
-    if(e.key === 'Enter') addGroupBtn.click();
-  });
+    showStatus.timer =
+      setTimeout(function () {
+
+        statusMsg.className = 'hidden';
+
+      }, 2600);
+
+  }
+
+
+  /* =========================================
+     空状態
+  ========================================= */
+
+  function updateEmptyState() {
+
+    boardEmpty.style.display =
+      posts.length === 0 ? 'block' : 'none';
+
+  }
+
+
+  /* =========================================
+     件数
+  ========================================= */
+
+  function updateCountBadges() {
+
+    countBadges.innerHTML = '';
+
+    STATUSES.forEach(function (status) {
+
+      const count =
+        posts.filter(function (post) {
+
+          return post.status === status.id;
+
+        }).length;
+
+
+      const badge =
+        document.createElement('span');
+
+
+      badge.className =
+        'inline-flex items-center gap-1.5 ' +
+        'border border-line rounded-md px-2.5 py-1 ' +
+        'text-muted font-mono';
+
+
+      badge.textContent =
+        status.label + ' ' + count;
+
+
+      countBadges.appendChild(badge);
+
+    });
+
+
+    const totalBadge =
+      document.createElement('span');
+
+
+    totalBadge.className =
+      'inline-flex items-center ' +
+      'border border-linestrong rounded-md px-2.5 py-1 ' +
+      'text-paper font-bold font-mono';
+
+
+    totalBadge.textContent =
+      '合計 ' + posts.length + '件';
+
+
+    countBadges.appendChild(totalBadge);
+
+  }
+
+
+  /* =========================================
+     編集済み表示
+  ========================================= */
+
+  function updateEditedDisplay(post) {
+
+    const editedArea =
+      post.cardEl.querySelector('.edit-status');
+
+
+    if (post.editedAt) {
+
+      editedArea.innerHTML =
+        '<span class="edit-badge">' +
+        '編集済み ' +
+        post.editedAt +
+        '</span>';
+
+    } else {
+
+      editedArea.innerHTML = '';
+
+    }
+
+  }
+
+
+  /* =========================================
+     進行状況変更
+  ========================================= */
+
+  function setStatus(post, statusId) {
+
+    post.status = statusId;
+
+
+    post.cardEl.classList.remove(
+      'state-todo',
+      'state-doing',
+      'state-done'
+    );
+
+
+    post.cardEl.classList.add(
+      'state-' + statusId
+    );
+
+
+    post.chipEls.forEach(function (chip) {
+
+      chip.classList.toggle(
+        'selected',
+        chip.dataset.status === statusId
+      );
+
+    });
+
+
+    updateCountBadges();
+
+  }
+
+
+  /* =========================================
+     付箋削除
+  ========================================= */
+
+  function removePost(post) {
+
+    posts =
+      posts.filter(function (item) {
+
+        return item.id !== post.id;
+
+      });
+
+
+    if (post.cardEl) {
+      post.cardEl.remove();
+    }
+
+
+    updateEmptyState();
+    updateCountBadges();
+
+    showStatus(
+      '活動報告を削除しました。',
+      'success'
+    );
+
+  }
+
+
+  /* =========================================
+     付箋作成
+  ========================================= */
+
+  function buildCard(post) {
+
+    const card =
+      document.createElement('div');
+
+
+    card.className =
+      'group-card bg-panel border border-line rounded-md p-4 state-' +
+      post.status;
+
+
+    card.innerHTML = `
+
+      <!-- 上部 -->
+
+      <div class="flex items-start justify-between gap-3 mb-4">
+
+        <div class="min-w-0">
+
+          <div class="text-xs text-muted mb-1">
+            グループ名
+          </div>
+
+          <div
+            class="group-name-display font-black text-lg break-words"
+          ></div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="delete-btn text-muted hover:text-rose-400 text-sm shrink-0"
+          title="削除"
+          aria-label="この付箋を削除"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <!-- 活動内容 -->
+
+      <div class="mb-4">
+
+        <div class="text-xs text-muted mb-1">
+          活動内容
+        </div>
+
+        <div
+          class="activity-display display-text text-sm leading-relaxed"
+        ></div>
+
+      </div>
+
+
+      <!-- 担当者 -->
+
+      <div class="person-section optional-display">
+
+        <div class="text-xs text-muted mb-1">
+          担当者
+        </div>
+
+        <div
+          class="person-display display-text text-sm"
+        ></div>
+
+      </div>
+
+
+      <!-- 目的 -->
+
+      <div class="purpose-section optional-display">
+
+        <div class="text-xs text-muted mb-1">
+          目的
+        </div>
+
+        <div
+          class="purpose-display display-text text-sm leading-relaxed"
+        ></div>
+
+      </div>
+
+
+      <!-- 進行状況 -->
+
+      <div class="status-section optional-display">
+
+        <div class="text-xs text-muted mb-2">
+          進行状況
+        </div>
+
+        <div class="status-row flex gap-2 flex-wrap"></div>
+
+      </div>
+
+
+      <!-- 投稿日時 -->
+
+      <div class="border-t border-line pt-3 mt-3">
+
+        <div class="time-display">
+          投稿日時：${post.createdAt}
+        </div>
+
+      </div>
+
+
+      <!-- 下部 -->
+
+      <div class="flex items-center justify-between gap-2 mt-3">
+
+        <div class="edit-status"></div>
+
+        <button
+          type="button"
+          class="edit-btn px-3 py-1.5 text-xs font-bold border border-line rounded-md text-muted hover:text-paper hover:border-linestrong"
+        >
+          編集
+        </button>
+
+      </div>
+
+
+      <!-- 編集フォーム -->
+
+      <div class="edit-form hidden mt-3 border-t border-line pt-3">
+
+        <div class="mb-3">
+
+          <label class="field-label">
+            グループ名
+          </label>
+
+          <input
+            type="text"
+            class="edit-group-name w-full border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber"
+          >
+
+        </div>
+
+
+        <div class="mb-3">
+
+          <label class="field-label">
+            活動内容
+          </label>
+
+          <textarea
+            class="edit-activity w-full border border-line rounded-md p-2 text-sm min-h-[80px] focus:outline-none focus:border-amber"
+          ></textarea>
+
+        </div>
+
+
+        <div class="mb-3">
+
+          <label class="field-label">
+            担当者
+            <span class="optional-label">任意</span>
+          </label>
+
+          <input
+            type="text"
+            class="edit-person w-full border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber"
+          >
+
+        </div>
+
+
+        <div class="mb-3">
+
+          <label class="field-label">
+            目的
+            <span class="optional-label">任意</span>
+          </label>
+
+          <input
+            type="text"
+            class="edit-purpose w-full border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-amber"
+          >
+
+        </div>
+
+
+        <div class="flex justify-end gap-2">
+
+          <button
+            type="button"
+            class="cancel-edit px-3 py-1.5 text-xs border border-line rounded-md text-muted hover:text-paper"
+          >
+            キャンセル
+          </button>
+
+          <button
+            type="button"
+            class="save-edit px-3 py-1.5 text-xs font-bold text-amberink bg-amber rounded-md hover:brightness-110"
+          >
+            保存
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    /* =========================================
+       表示要素
+    ========================================= */
+
+    const groupNameDisplay =
+      card.querySelector('.group-name-display');
+
+    const activityDisplay =
+      card.querySelector('.activity-display');
+
+    const personSection =
+      card.querySelector('.person-section');
+
+    const personDisplay =
+      card.querySelector('.person-display');
+
+    const purposeSection =
+      card.querySelector('.purpose-section');
+
+    const purposeDisplay =
+      card.querySelector('.purpose-display');
+
+
+    groupNameDisplay.textContent =
+      post.groupName;
+
+    activityDisplay.textContent =
+      post.activity;
+
+
+    /* =========================================
+       担当者
+    ========================================= */
+
+    if (post.person) {
+
+      personDisplay.textContent =
+        post.person;
+
+      personSection.style.display =
+        'block';
+
+    } else {
+
+      personSection.style.display =
+        'none';
+
+    }
+
+
+    /* =========================================
+       目的
+    ========================================= */
+
+    if (post.purpose) {
+
+      purposeDisplay.textContent =
+        post.purpose;
+
+      purposeSection.style.display =
+        'block';
+
+    } else {
+
+      purposeSection.style.display =
+        'none';
+
+    }
+
+
+    /* =========================================
+       進行状況
+    ========================================= */
+
+    const statusRow =
+      card.querySelector('.status-row');
+
+
+    post.chipEls =
+      STATUSES.map(function (status) {
+
+        const chip =
+          document.createElement('button');
+
+
+        chip.type = 'button';
+
+
+        chip.className =
+          'status-chip on-' + status.id +
+          (
+            post.status === status.id
+              ? ' selected'
+              : ''
+          );
+
+
+        chip.dataset.status =
+          status.id;
+
+
+        chip.textContent =
+          status.label;
+
+
+        chip.addEventListener(
+          'click',
+          function () {
+
+            setStatus(
+              post,
+              status.id
+            );
+
+          }
+        );
+
+
+        statusRow.appendChild(chip);
+
+
+        return chip;
+
+      });
+
+
+    /* =========================================
+       編集要素
+    ========================================= */
+
+    const editBtn =
+      card.querySelector('.edit-btn');
+
+    const editForm =
+      card.querySelector('.edit-form');
+
+    const editGroupName =
+      card.querySelector('.edit-group-name');
+
+    const editActivity =
+      card.querySelector('.edit-activity');
+
+    const editPerson =
+      card.querySelector('.edit-person');
+
+    const editPurpose =
+      card.querySelector('.edit-purpose');
+
+
+    /* =========================================
+       編集ボタン
+    ========================================= */
+
+    editBtn.addEventListener(
+      'click',
+      function () {
+
+        if (
+          editForm.classList.contains('hidden')
+        ) {
+
+          editGroupName.value =
+            post.groupName;
+
+          editActivity.value =
+            post.activity;
+
+          editPerson.value =
+            post.person;
+
+          editPurpose.value =
+            post.purpose;
+
+
+          editForm.classList.remove(
+            'hidden'
+          );
+
+
+          editBtn.textContent =
+            '編集を閉じる';
+
+
+          editGroupName.focus();
+
+        } else {
+
+          editForm.classList.add(
+            'hidden'
+          );
+
+
+          editBtn.textContent =
+            '編集';
+
+        }
+
+      }
+    );
+
+
+    /* =========================================
+       キャンセル
+    ========================================= */
+
+    card.querySelector('.cancel-edit')
+      .addEventListener(
+        'click',
+        function () {
+
+          editForm.classList.add(
+            'hidden'
+          );
+
+          editBtn.textContent =
+            '編集';
+
+        }
+      );
+
+
+    /* =========================================
+       保存
+    ========================================= */
+
+    card.querySelector('.save-edit')
+      .addEventListener(
+        'click',
+        function () {
+
+          const newGroupName =
+            editGroupName.value.trim();
+
+          const newActivity =
+            editActivity.value.trim();
+
+          const newPerson =
+            editPerson.value.trim();
+
+          const newPurpose =
+            editPurpose.value.trim();
+
+
+          /* 必須チェック */
+
+          if (!newGroupName) {
+
+            showStatus(
+              'グループ名を入力してください。',
+              'error'
+            );
+
+            editGroupName.focus();
+
+            return;
+
+          }
+
+
+          if (!newActivity) {
+
+            showStatus(
+              '活動内容を入力してください。',
+              'error'
+            );
+
+            editActivity.focus();
+
+            return;
+
+          }
+
+
+          /* データ更新 */
+
+          post.groupName =
+            newGroupName;
+
+          post.activity =
+            newActivity;
+
+          post.person =
+            newPerson;
+
+          post.purpose =
+            newPurpose;
+
+
+          /* 編集時刻 */
+
+          post.editedAt =
+            getDateTime();
+
+
+          /* 表示更新 */
+
+          groupNameDisplay.textContent =
+            post.groupName;
+
+          activityDisplay.textContent =
+            post.activity;
+
+
+          /* 担当者 */
+
+          if (post.person) {
+
+            personDisplay.textContent =
+              post.person;
+
+            personSection.style.display =
+              'block';
+
+          } else {
+
+            personDisplay.textContent =
+              '';
+
+            personSection.style.display =
+              'none';
+
+          }
+
+
+          /* 目的 */
+
+          if (post.purpose) {
+
+            purposeDisplay.textContent =
+              post.purpose;
+
+            purposeSection.style.display =
+              'block';
+
+          } else {
+
+            purposeDisplay.textContent =
+              '';
+
+            purposeSection.style.display =
+              'none';
+
+          }
+
+
+          /* 編集済み表示 */
+
+          updateEditedDisplay(post);
+
+
+          /* 編集フォームを閉じる */
+
+          editForm.classList.add(
+            'hidden'
+          );
+
+          editBtn.textContent =
+            '編集';
+
+
+          showStatus(
+            '活動報告を編集しました。',
+            'success'
+          );
+
+        }
+      );
+
+
+    /* =========================================
+       削除
+    ========================================= */
+
+    card.querySelector('.delete-btn')
+      .addEventListener(
+        'click',
+        function () {
+
+          const ok =
+            window.confirm(
+              'この活動報告を削除します。よろしいですか？'
+            );
+
+
+          if (ok) {
+
+            removePost(post);
+
+          }
+
+        }
+      );
+
+
+    /* =========================================
+       参照を保存
+    ========================================= */
+
+    post.cardEl =
+      card;
+
+
+    updateEditedDisplay(post);
+
+
+    return card;
+
+  }
+
+
+  /* =========================================
+     新しい付箋を追加
+  ========================================= */
+
+  function addPost(
+    groupName,
+    activity,
+    person,
+    purpose
+  ) {
+
+    const post = {
+
+      id:
+        'post-' + (++postSeq),
+
+      groupName:
+        groupName,
+
+      activity:
+        activity,
+
+      person:
+        person,
+
+      purpose:
+        purpose,
+
+      status:
+        'todo',
+
+      createdAt:
+        getDateTime(),
+
+      editedAt:
+        null,
+
+      cardEl:
+        null,
+
+      chipEls:
+        []
+
+    };
+
+
+    posts.push(post);
+
+
+    const card =
+      buildCard(post);
+
+
+    cardsGrid.appendChild(card);
+
+
+    updateEmptyState();
+    updateCountBadges();
+
+
+    return post;
+
+  }
+
+
+  /* =========================================
+     投稿ボタン
+  ========================================= */
+
+  addPostBtn.addEventListener(
+    'click',
+    function () {
+
+      const groupName =
+        groupNameInput.value.trim();
+
+      const activity =
+        activityInput.value.trim();
+
+      const person =
+        personInput.value.trim();
+
+      const purpose =
+        purposeInput.value.trim();
+
+
+      /* グループ名 */
+
+      if (!groupName) {
+
+        showStatus(
+          'グループ名を入力してください。',
+          'error'
+        );
+
+        groupNameInput.focus();
+
+        return;
+
+      }
+
+
+      /* 活動内容 */
+
+      if (!activity) {
+
+        showStatus(
+          '活動内容を入力してください。',
+          'error'
+        );
+
+        activityInput.focus();
+
+        return;
+
+      }
+
+
+      /* 投稿 */
+
+      addPost(
+        groupName,
+        activity,
+        person,
+        purpose
+      );
+
+
+      /* 入力欄を空にする */
+
+      groupNameInput.value = '';
+      activityInput.value = '';
+      personInput.value = '';
+      purposeInput.value = '';
+
+
+      groupNameInput.focus();
+
+
+      showStatus(
+        '活動報告を投稿しました。',
+        'success'
+      );
+
+    }
+  );
+
+
+  /* =========================================
+     グループ名でEnter
+  ========================================= */
+
+  groupNameInput.addEventListener(
+    'keydown',
+    function (event) {
+
+      if (event.key === 'Enter') {
+
+        event.preventDefault();
+
+        addPostBtn.click();
+
+      }
+
+    }
+  );
+
+
+  /* =========================================
+     活動内容
+     Ctrl + Enterで投稿
+  ========================================= */
+
+  activityInput.addEventListener(
+    'keydown',
+    function (event) {
+
+      if (
+        event.key === 'Enter' &&
+        event.ctrlKey
+      ) {
+
+        event.preventDefault();
+
+        addPostBtn.click();
+
+      }
+
+    }
+  );
+
+
+  /* =========================================
+     初期表示
+  ========================================= */
 
   updateEmptyState();
   updateCountBadges();
+
 })();
-</script>
 </script>
 
 </body>
 </html>
-
