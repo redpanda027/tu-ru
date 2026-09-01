@@ -5,11 +5,11 @@ const SUPABASE_CONFIG = {
   // Supabase ダッシュボード → Settings → API から取得
   // 📌 重要: URL のみを指定（REST API エンドポイントではなく）
   // 例: https://abc123.supabase.co
-  url: 'https://YOUR_PROJECT_ID.supabase.co',
+  url: 'https://bdjxpyzziresvatnsdlf.supabase.co',
   
   // anon public key（公開可）
   // 注意: service_role key ではなく anon public key を使用
-  anonKey: 'YOUR_ANON_KEY',
+  anonKey: 'sb_publishable_QqSLDzrKbNEr0l86bEY8GQ_jbSZL3Nh',
   
   // 開発時は console.log を有効化
   debug: true
