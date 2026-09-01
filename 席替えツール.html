@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RPツールズ | 席替えツール</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -34,12 +36,24 @@
 <style>
   body{ background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1.4px); background-size: 24px 24px; }
 
+  :root {
+    --desk-border-width: 1.5px;
+  }
+
   .desk{
     aspect-ratio:5/4;min-width:56px;
-    border:1.5px solid #323236;border-radius:6px;
+    border:var(--desk-border-width) solid #323236;border-radius:6px;
     display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;
     position:relative;cursor:pointer;user-select:none;background:#1a1a1d;
     transition:border-color .12s ease, background .12s ease;
+    min-height:48px;
+  }
+  @media (max-width:640px){
+    .desk{
+      min-width:44px;
+      min-height:44px;
+      font-size:10px;
+    }
   }
   .desk:hover{border-color:#ffb020;}
   .desk:focus-visible{outline:2px solid #ffb020;outline-offset:2px;}
@@ -48,6 +62,12 @@
 
   .desk.ghost-spacer{visibility:hidden;pointer-events:none;border:none;}
   .aisle-gap{visibility:hidden;pointer-events:none;}
+  .pair-gap{
+    background:linear-gradient(90deg, transparent 0%, rgba(255,176,32,0.15) 50%, transparent 100%);
+    pointer-events:none;
+    border-left:1px dashed rgba(255,176,32,0.3);
+    border-right:1px dashed rgba(255,176,32,0.3);
+  }
   .desk.empty-slot{background:#1a1a1d;}
   .desk.empty-slot .seat-name{color:#65656b;font-size:11px;}
   .desk.forced-empty{background:repeating-linear-gradient(45deg,#1a1a1d,#1a1a1d 6px,#202024 6px,#202024 12px);border-style:dashed;border-color:#46464c;}
@@ -75,6 +95,14 @@
   .ng-chip button{color:#98979c;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;padding:2px 3px;}
   .ng-chip button:hover{color:#fca5a5;}
   select{background-color:#111113;color:#f5f4f0;}
+
+  /* モバイル対応 */
+  @media (max-width:768px) {
+    button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
 </style>
 </head>
 <body class="font-sans bg-ink text-paper antialiased">
@@ -86,7 +114,7 @@
       <span class="w-2.5 h-2.5 bg-amber inline-block"></span>
       <span class="text-lg font-black tracking-tight">RPツールズ</span>
     </a>
-    <nav class="flex gap-6 text-sm">
+    <nav class="flex gap-6 text-sm flex-wrap justify-center">
       <span class="font-bold text-amber border-b-2 border-amber pb-1">席替えツール</span>
       <a href="いけんボード.html" class="text-muted hover:text-paper pb-1">いけんボード</a>
       <a href="グループ活動ボード.html" class="text-muted hover:text-paper pb-1">グループ活動ボード</a>
@@ -145,6 +173,13 @@
       <div>
         <label for="aisleInput" class="block text-xs text-muted mb-1.5">通路の位置(列のグループ)</label>
         <input type="text" id="aisleInput" placeholder="例) 3,3" class="w-32 bg-ink border border-line rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-amber">
+      </div>
+      <div>
+        <label for="deskBorderInput" class="block text-xs text-muted mb-1.5">机の枠線の太さ</label>
+        <div class="flex items-center gap-2">
+          <input type="range" id="deskBorderInput" min="0.5" max="4" step="0.5" value="1.5" class="w-24">
+          <span id="deskBorderValue" class="text-xs text-paper font-mono font-bold">1.5px</span>
+        </div>
       </div>
       <div class="flex items-center gap-2 pb-1.5">
         <input type="checkbox" id="frontToggle" class="w-4 h-4 accent-amber">
@@ -236,6 +271,8 @@
   const modeHint = document.getElementById('modeHint');
   const modeBtns = document.querySelectorAll('.mode-btn[data-mode]');
   const shapeBtns = document.querySelectorAll('.shape-btn[data-shape]');
+  const deskBorderInput = document.getElementById('deskBorderInput');
+  const deskBorderValue = document.getElementById('deskBorderValue');
 
   const avoidRepeatToggle = document.getElementById('avoidRepeatToggle');
   const ngNameA = document.getElementById('ngNameA');
@@ -308,6 +345,12 @@
   }
   shapeBtns.forEach(b => b.addEventListener('click', () => setShape(b.dataset.shape)));
 
+  deskBorderInput.addEventListener('input', () => {
+    const value = deskBorderInput.value;
+    document.documentElement.style.setProperty('--desk-border-width', value + 'px');
+    deskBorderValue.textContent = value + 'px';
+  });
+
   frontToggle.addEventListener('change', () => {
     frontMarker.classList.toggle('hidden', !frontToggle.checked);
   });
@@ -360,10 +403,17 @@
     }
 
     // Build an explicit column template so aisle gaps become real empty tracks.
+    // デフォルトで、左右のペア（2列ごと）の間に区切り余白を追加
     const templateParts = [];
     for(let c = 0; c < cols; c++){
       templateParts.push('minmax(0,1fr)');
-      if(aisleAfterCols.has(c) && c !== cols - 1) templateParts.push('16px');
+      // 明示的な通路指定、または 2列ごとのペア区切り
+      if(aisleAfterCols.has(c) && c !== cols - 1) {
+        templateParts.push('16px');
+      } else if((c + 1) % 2 === 0 && c !== cols - 1 && aisleAfterCols.size === 0) {
+        // 通路指定がない場合、2列ごとにペア区切りを入れる
+        templateParts.push('8px');
+      }
     }
     seatGrid.style.gridTemplateColumns = templateParts.join(' ');
     seatGrid.innerHTML = '';
@@ -382,7 +432,12 @@
           desk.className = 'desk empty-slot';
           desk.tabIndex = 0;
           desk.dataset.index = idx;
-          desk.innerHTML = `<span class="seat-no">${idx+1}</span><span class="seat-name">(空席)</span>`;
+          desk.dataset.row = r;
+          desk.dataset.col = c;
+          // 座席番号を「行-列」形式で表示（1-1, 1-2, 2-1, 2-2...）
+          const rowLabel = String.fromCharCode(65 + r); // A, B, C...
+          const colNum = c + 1;
+          desk.innerHTML = `<span class="seat-no">${rowLabel}-${colNum}</span><span class="seat-name">(空席)</span>`;
           desk.addEventListener('click', () => openSeatMenuFor(idx, desk));
           desk.addEventListener('keydown', (e) => {
             if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openSeatMenuFor(idx, desk); }
@@ -393,6 +448,12 @@
         if(aisleAfterCols.has(c) && c !== cols - 1){
           const spacer = document.createElement('div');
           spacer.className = 'aisle-gap';
+          spacer.setAttribute('aria-hidden', 'true');
+          seatGrid.appendChild(spacer);
+        } else if((c + 1) % 2 === 0 && c !== cols - 1 && aisleAfterCols.size === 0){
+          // ペア区切り用のスペーサー
+          const spacer = document.createElement('div');
+          spacer.className = 'pair-gap';
           spacer.setAttribute('aria-hidden', 'true');
           seatGrid.appendChild(spacer);
         }

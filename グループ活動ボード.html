@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <title>RPツールズ | グループ活動ボード</title>
 
@@ -178,7 +180,7 @@ textarea {
       <span class="text-lg font-black tracking-tight">RPツールズ</span>
     </a>
 
-    <nav class="flex gap-6 text-sm">
+    <nav class="flex gap-6 text-sm flex-wrap justify-center">
 
       <a href="席替えツール.html"
          class="text-muted hover:text-paper pb-1">
@@ -211,7 +213,7 @@ textarea {
   </p>
 
   <p class="text-xs text-muted/70 font-mono mb-3">
-    ※ この画面のメモリー上だけで動くツールです。ページを閉じたり再読み込みすると内容は消えます。
+    ※ データはブラウザのメモリに保存されます。ページを再読み込みすると内容は消えます。複数デバイスでの共有にはQRコードをお使いください。
   </p>
 
   <!-- 共有セクション -->
@@ -336,7 +338,16 @@ textarea {
     </div>
 
 
-    <div class="flex justify-end">
+    <div class="flex gap-2 justify-end flex-wrap">
+
+      <button
+        type="button"
+        id="exportBtn"
+        class="px-4 py-2 text-sm border border-line rounded-md hover:border-amber hover:text-amber"
+        title="このボードのデータをコピーして共有"
+      >
+        📋 共有コードをコピー
+      </button>
 
       <button
         type="button"
@@ -388,14 +399,27 @@ textarea {
 
 </main>
 
+<!-- 参加者一覧モーダル -->
+<div id="participantsModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-panel border border-line rounded-md max-w-md w-full p-5">
+    <h2 class="text-sm font-bold mb-4">📱 参加中のデバイス</h2>
+    <div id="participantsList" class="space-y-2 max-h-64 overflow-y-auto mb-4">
+      <!-- 参加者リストが動的に追加される -->
+    </div>
+    <p class="text-xs text-muted mb-4">同じボード ID でアクセスしているデバイスが表示されます。1時間以上アクセスがないデバイスは自動的に削除されます。</p>
+    <button type="button" id="closeParticipantsModalBtn" class="w-full px-4 py-2 text-sm border border-line rounded-md hover:border-amber hover:text-amber">閉じる</button>
+  </div>
+</div>
 
 <footer class="border-t border-line py-8 mt-10">
 
   <p class="text-center text-xs text-muted font-mono tracking-wide">
-    RPツールズ
+    RPツールズ | グループ活動ボード
   </p>
 
 </footer>
+
+<script src="shared-ui.js"></script>
 
 
 <script>
@@ -411,6 +435,7 @@ textarea {
   const purposeInput = document.getElementById('purposeInput');
 
   const addPostBtn = document.getElementById('addPostBtn');
+  const exportBtn = document.getElementById('exportBtn');
 
   const statusMsg = document.getElementById('statusMsg');
   const cardsGrid = document.getElementById('cardsGrid');
@@ -1447,6 +1472,24 @@ textarea {
 
 
   /* =========================================
+     共有コードをコピー
+  ========================================= */
+
+  exportBtn.addEventListener('click', function() {
+    const data = JSON.stringify(posts);
+    const encoded = btoa(encodeURIComponent(data));
+    const shareCode = encoded.slice(0, 100) + '...';
+    const fullCode = encoded;
+    
+    navigator.clipboard.writeText(fullCode).then(() => {
+      showStatus('共有コードをコピーしました。他のデバイスで貼り付けてインポートできます。', 'success');
+    }).catch(() => {
+      showStatus('コピーに失敗しました。手動でコピーしてください。', 'error');
+    });
+  });
+
+
+  /* =========================================
      グループ名でEnter
   ========================================= */
 
@@ -1498,6 +1541,11 @@ textarea {
   updateCountBadges();
 
 })();
+
+// 共有UI の初期化
+if (typeof initializeShareUI !== 'undefined') {
+  initializeShareUI('group');
+}
 </script>
 
 <!-- Supabase リアルタイム同期 -->
@@ -1511,26 +1559,6 @@ textarea {
       setTimeout(() => initializeGroupBoardSync(), 500);
     });
   }
-</script>
-
-<!-- 参加者一覧モーダル -->
-<div id="participantsModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-panel border border-line rounded-md max-w-md w-full p-5">
-    <h2 class="text-sm font-bold mb-4">📱 参加中のデバイス</h2>
-    <div id="participantsList" class="space-y-2 max-h-64 overflow-y-auto mb-4">
-      <!-- 参加者リストが動的に追加される -->
-    </div>
-    <p class="text-xs text-muted mb-4">同じボード ID でアクセスしているデバイスが表示されます。1時間以上アクセスがないデバイスは自動的に削除されます。</p>
-    <button type="button" id="closeParticipantsModalBtn" class="w-full px-4 py-2 text-sm border border-line rounded-md hover:border-amber hover:text-amber">閉じる</button>
-  </div>
-</div>
-
-<script src="shared-ui.js"></script>
-<script>
-// 共有UI の初期化
-if (typeof initializeShareUI !== 'undefined') {
-  initializeShareUI('activity');
-}
 </script>
 
 </body>

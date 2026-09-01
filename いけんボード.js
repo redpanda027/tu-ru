@@ -6,6 +6,123 @@
     { id: 'idea',     label: 'アイデア・意見', color: '#f59e0b' }
   ];
 
+  // ===== 共有機能 =====
+  function generateBoardId(){
+    return 'ik' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  }
+
+  function getBoardId(){
+    let boardId = localStorage.getItem('ikkenboard_id');
+    if(!boardId){
+      boardId = generateBoardId();
+      localStorage.setItem('ikkenboard_id', boardId);
+    }
+    return boardId;
+  }
+
+  const boardId = getBoardId();
+  const boardIdDisplay = document.getElementById('boardIdDisplay');
+  const shareUrlDisplay = document.getElementById('shareUrlDisplay');
+  const copyBoardIdBtn = document.getElementById('copyBoardIdBtn');
+  const copyUrlBtn = document.getElementById('copyUrlBtn');
+  const participantCount = document.getElementById('participantCount');
+  const qrContainer = document.getElementById('qrContainer');
+
+  function updateShareLinks(){
+    const boardId = getBoardId();
+    boardIdDisplay.value = boardId;
+    
+    const shareUrl = `${window.location.origin}${window.location.pathname}?boardId=${boardId}`;
+    shareUrlDisplay.value = shareUrl;
+    
+    // QR コード生成
+    qrContainer.innerHTML = '';
+    new QRCode(qrContainer, {
+      text: shareUrl,
+      width: 120,
+      height: 120,
+      colorDark: '#121214',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  copyBoardIdBtn.addEventListener('click', () => {
+    boardIdDisplay.select();
+    document.execCommand('copy');
+    const originalText = copyBoardIdBtn.textContent;
+    copyBoardIdBtn.textContent = '✓ コピーしました';
+    setTimeout(() => { copyBoardIdBtn.textContent = originalText; }, 2000);
+  });
+
+  copyUrlBtn.addEventListener('click', () => {
+    shareUrlDisplay.select();
+    document.execCommand('copy');
+    const originalText = copyUrlBtn.textContent;
+    copyUrlBtn.textContent = '✓ コピーしました';
+    setTimeout(() => { copyUrlBtn.textContent = originalText; }, 2000);
+  });
+
+  function updateParticipantInfo(){
+    const boardId = getBoardId();
+    const key = `ikkenboard_participants_${boardId}`;
+    let participants = JSON.parse(localStorage.getItem(key) || '[]');
+    // 古い参加者情報をクリア（1時間以上前）
+    const now = Date.now();
+    participants = participants.filter(p => now - p.timestamp < 3600000);
+    
+    // 自分のデバイスを追加
+    const deviceId = localStorage.getItem('ikkenboard_device_id') || 
+                     ('d' + Math.random().toString(36).substr(2, 9));
+    if(!localStorage.getItem('ikkenboard_device_id')){
+      localStorage.setItem('ikkenboard_device_id', deviceId);
+    }
+    
+    if(!participants.find(p => p.id === deviceId)){
+      participants.push({ id: deviceId, timestamp: now });
+    } else {
+      participants = participants.map(p => p.id === deviceId ? { id: deviceId, timestamp: now } : p);
+    }
+    localStorage.setItem(key, JSON.stringify(participants));
+    participantCount.textContent = participants.length;
+  }
+
+  // 初期化
+  updateShareLinks();
+  updateParticipantInfo();
+  setInterval(updateParticipantInfo, 30000); // 30秒ごとに参加者情報を更新
+
+  // 参加者一覧表示
+  const showParticipantsBtn = document.getElementById('showParticipantsBtn');
+  const participantsModal = document.getElementById('participantsModal');
+  const participantsList = document.getElementById('participantsList');
+  const closeParticipantsModalBtn = document.getElementById('closeParticipantsModalBtn');
+
+  function showParticipantsModal(){
+    const boardId = getBoardId();
+    const key = `ikkenboard_participants_${boardId}`;
+    const participants = JSON.parse(localStorage.getItem(key) || '[]');
+    
+    participantsList.innerHTML = participants.map((p, i) => 
+      `<div class="flex items-center gap-2 p-2 bg-panel2 rounded text-xs">
+        <span class="w-2 h-2 rounded-full bg-amber"></span>
+        <span class="text-muted">デバイス ${i + 1}</span>
+      </div>`
+    ).join('');
+    
+    participantsModal.classList.remove('hidden');
+  }
+
+  showParticipantsBtn.addEventListener('click', showParticipantsModal);
+  closeParticipantsModalBtn.addEventListener('click', () => {
+    participantsModal.classList.add('hidden');
+  });
+  participantsModal.addEventListener('click', (e) => {
+    if(e.target === participantsModal){
+      participantsModal.classList.add('hidden');
+    }
+  });
+
   const nameInput = document.getElementById('nameInput');
   const textInput = document.getElementById('textInput');
   const addBtn = document.getElementById('addBtn');
@@ -223,7 +340,8 @@
 
   addBtn.addEventListener('click', addNote);
   textInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){
+    if((e.key === 'Enter') && (e.metaKey || e.ctrlKey)){
+      e.preventDefault();
       addNote();
     }
   });
