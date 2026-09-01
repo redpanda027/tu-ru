@@ -6,7 +6,7 @@
   const url = config.url || config.SUPABASE_URL;
   const key = config.publishableKey || config.anonKey || config.key || config.SUPABASE_KEY;
 
-  if (!url || !key || key === 'PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE') {
+  if (!url || !key || key === 'sb_publishable_QqSLDzrKbNEr0l86bEY8GQ_jbSZL3Nh') {
     window.GroupBoardStore = { ready: false, error: 'Supabase の Publishable key が設定されていません。' };
     return;
   }
