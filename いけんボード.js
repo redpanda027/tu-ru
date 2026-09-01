@@ -253,6 +253,13 @@
       el.remove();
       updateCountBadges();
       updateEmptyState();
+      
+      // Supabase から削除（失敗してもローカルでは動作）
+      if (typeof deleteNoteFromSupabase !== 'undefined') {
+        deleteNoteFromSupabase(note.id).catch(err => {
+          console.log('🗑️ Supabase 削除: ローカルで動作');
+        });
+      }
     });
     makeDraggable(el, note);
     board.appendChild(el);
@@ -290,6 +297,19 @@
     updateEmptyState();
     textInput.value = '';
     textInput.focus();
+    
+    // Supabase に保存（失敗してもローカルでは動作）
+    if (typeof saveNoteToSupabase !== 'undefined' && typeof getBoardId !== 'undefined') {
+      try {
+        const boardId = getBoardId('ikken');
+        const deviceId = typeof getDeviceId !== 'undefined' ? getDeviceId() : 'unknown';
+        saveNoteToSupabase(boardId, deviceId, note).catch(err => {
+          console.log('💾 Supabase への保存: ローカルで動作');
+        });
+      } catch (err) {
+        console.log('💾 Supabase 保存スキップ:', err.message);
+      }
+    }
   }
 
   function clearAll(){

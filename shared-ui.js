@@ -1,20 +1,15 @@
 // 共有UI初期化関数
 function initializeShareUI(boardType) {
-  function generateBoardId() {
-    return boardType.charAt(0).toUpperCase() + Math.random().toString(36).substr(2, 9).toUpperCase();
+  // グローバルの getBoardId を使用（supabase-config.js で定義）
+  // ここで重複定義しない
+  let boardId;
+  try {
+    boardId = getBoardId(boardType);
+  } catch (err) {
+    console.warn('getBoardId not available, using local generation');
+    boardId = boardType.charAt(0).toUpperCase() + Math.random().toString(36).substr(2, 9).toUpperCase();
+    localStorage.setItem(`board_${boardType}_id`, boardId);
   }
-
-  function getBoardId() {
-    const key = `board_${boardType}_id`;
-    let boardId = localStorage.getItem(key);
-    if (!boardId) {
-      boardId = generateBoardId();
-      localStorage.setItem(key, boardId);
-    }
-    return boardId;
-  }
-
-  const boardId = getBoardId();
   const boardIdDisplay = document.getElementById('boardIdDisplay');
   const shareUrlDisplay = document.getElementById('shareUrlDisplay');
   const copyBoardIdBtn = document.getElementById('copyBoardIdBtn');
@@ -29,22 +24,34 @@ function initializeShareUI(boardType) {
   if (!boardIdDisplay) return; // 共有UI がない場合はスキップ
 
   function updateShareLinks() {
-    const boardId = getBoardId();
+    const boardId = getBoardId(boardType);
     if (boardIdDisplay) boardIdDisplay.value = boardId;
     
     const shareUrl = `${window.location.origin}${window.location.pathname}?boardId=${boardId}`;
     if (shareUrlDisplay) shareUrlDisplay.value = shareUrl;
     
-    if (qrContainer && typeof QRCode !== 'undefined') {
-      qrContainer.innerHTML = '';
-      new QRCode(qrContainer, {
-        text: shareUrl,
-        width: 120,
-        height: 120,
-        colorDark: '#121214',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
+    // QR コード生成（失敗時もエラーを出さない）
+    if (qrContainer) {
+      try {
+        qrContainer.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(qrContainer, {
+            text: shareUrl,
+            width: 120,
+            height: 120,
+            colorDark: '#121214',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        } else {
+          // QRCode ライブラリが読み込まれていない場合
+          qrContainer.innerHTML = '<div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;color:#98979c;font-size:12px;text-align:center;">QR コード<br>ライブラリ<br>未読み込み</div>';
+          console.warn('QRCode library not loaded');
+        }
+      } catch (err) {
+        qrContainer.innerHTML = '<div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;color:#98979c;font-size:12px;text-align:center;">QR コード<br>生成失敗</div>';
+        console.warn('QR code generation failed:', err);
+      }
     }
   }
 
@@ -69,7 +76,7 @@ function initializeShareUI(boardType) {
   }
 
   function updateParticipantInfo() {
-    const boardId = getBoardId();
+    const boardId = getBoardId(boardType);  // ← boardType パラメータを追加
     const key = `board_${boardType}_participants_${boardId}`;
     let participants = JSON.parse(localStorage.getItem(key) || '[]');
     const now = Date.now();
@@ -93,7 +100,7 @@ function initializeShareUI(boardType) {
 
   function showParticipantsModal() {
     if (!participantsModal) return;
-    const boardId = getBoardId();
+    const boardId = getBoardId(boardType);  // ← boardType パラメータを追加
     const key = `board_${boardType}_participants_${boardId}`;
     const participants = JSON.parse(localStorage.getItem(key) || '[]');
     
