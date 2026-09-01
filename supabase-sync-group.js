@@ -1,145 +1,81 @@
-// supabase-sync-group.js
-// グループ活動ボードのリアルタイム同期機能
+/* global supabase */
+(function () {
+  'use strict';
 
-async function initializeGroupBoardSync() {
-  await initSupabase();
-  if (!supabase) {
-    console.warn('Supabase not available. Using local mode.');
+  const config = window.SUPABASE_CONFIG || {};
+  const url = config.url || config.SUPABASE_URL;
+  const key = config.publishableKey || config.anonKey || config.key || config.SUPABASE_KEY;
+
+  if (!url || !key || key === 'PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE') {
+    window.GroupBoardStore = { ready: false, error: 'Supabase の Publishable key が設定されていません。' };
     return;
   }
 
-  const boardId = getBoardId();
-  const deviceId = getDeviceId();
-  
-  // リアルタイムリスナーを開始
-  subscribeToGroupPosts(boardId);
-}
+  const client = window.supabase.createClient(url, key);
+  const table = 'group_posts';
+  let channel;
 
-async function subscribeToGroupPosts(boardId) {
-  if (!supabase) return;
-  
-  // 初期データを読み込み
-  await loadGroupPostsFromSupabase(boardId);
-  
-  // リアルタイムリスナーを設定
-  supabase
-    .channel(`group_${boardId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'group_posts',
-        filter: `board_id=eq.${boardId}`
-      },
-      (payload) => {
-        if (SUPABASE_CONFIG.debug) {
-          console.log('📨 Group Realtime update:', payload);
-        }
-        
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          syncRemoteGroupPost(payload.new);
-        } else if (payload.eventType === 'DELETE') {
-          removeRemoteGroupPost(payload.old.id);
-        }
-      }
-    )
-    .subscribe((status) => {
-      if (SUPABASE_CONFIG.debug) {
-        console.log('📡 Group Channel status:', status);
-      }
-    });
-}
+  function rowToPost(row) {
+    return {
+      id: row.id,
+      groupName: row.group_name,
+      activity: row.activity,
+      person: row.person || '',
+      purpose: row.purpose || '',
+      status: row.status || 'todo',
+      createdAt: row.created_at,
+      updatedAt: row.updated_at || row.created_at,
+      createdBy: row.created_by || '',
+      deviceId: row.device_id || ''
+    };
+  }
 
-async function loadGroupPostsFromSupabase(boardId) {
-  if (!supabase) return;
-  
-  try {
-    const { data, error } = await supabase
-      .from('group_posts')
-      .select('*')
-      .eq('board_id', boardId)
-      .order('created_at', { ascending: false });
-    
+  async function list(boardId) {
+    const { data, error } = await client.from(table).select('*').eq('board_id', boardId).order('created_at', { ascending: false });
     if (error) throw error;
-    
-    if (data && data.length > 0) {
-      data.forEach(post => syncRemoteGroupPost(post));
-    }
-  } catch (err) {
-    console.error('❌ Failed to load group posts:', err);
+    return data.map(rowToPost);
   }
-}
 
-async function saveGroupPostToSupabase(boardId, post) {
-  if (!supabase) return;
-  
-  const deviceId = getDeviceId();
-  
-  try {
-    if (post.id) {
-      // 更新
-      const { error } = await supabase
-        .from('group_posts')
-        .update({
-          group_name: post.groupName,
-          activity: post.activity,
-          person: post.person || null,
-          purpose: post.purpose || null,
-          status: post.status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', post.id);
-      
-      if (error) throw error;
-      if (SUPABASE_CONFIG.debug) console.log('✅ Post updated:', post.id);
-    } else {
-      // 新規作成
-      const { error } = await supabase
-        .from('group_posts')
-        .insert({
-          board_id: boardId,
-          group_name: post.groupName,
-          activity: post.activity,
-          person: post.person || null,
-          purpose: post.purpose || null,
-          status: post.status || 'todo',
-          created_by: deviceId,
-          device_id: deviceId
-        });
-      
-      if (error) throw error;
-      if (SUPABASE_CONFIG.debug) console.log('✅ Post created');
-    }
-  } catch (err) {
-    console.error('❌ Failed to save group post:', err);
-  }
-}
-
-async function deleteGroupPostFromSupabase(postId) {
-  if (!supabase) return;
-  
-  try {
-    const { error } = await supabase
-      .from('group_posts')
-      .delete()
-      .eq('id', postId);
-    
+  async function create(boardId, values, deviceId) {
+    const { data, error } = await client.from(table).insert({
+      board_id: boardId,
+      group_name: values.groupName,
+      activity: values.activity,
+      person: values.person || null,
+      purpose: values.purpose || null,
+      status: 'todo',
+      created_by: values.createdBy || 'Web user',
+      device_id: deviceId
+    }).select().single();
     if (error) throw error;
-    if (SUPABASE_CONFIG.debug) console.log('✅ Post deleted:', postId);
-  } catch (err) {
-    console.error('❌ Failed to delete post:', err);
+    return rowToPost(data);
   }
-}
 
-function syncRemoteGroupPost(remotePost) {
-  // これはボードのレンダリング関数に統合する必要があります
-  // リモートデータを DOM に反映
-  console.log('🔄 Syncing remote group post:', remotePost);
-}
+  async function update(id, values) {
+    const { data, error } = await client.from(table).update({
+      group_name: values.groupName,
+      activity: values.activity,
+      person: values.person || null,
+      purpose: values.purpose || null,
+      status: values.status,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select().single();
+    if (error) throw error;
+    return rowToPost(data);
+  }
 
-function removeRemoteGroupPost(postId) {
-  // これはボードのレンダリング関数に統合する必要があります
-  // 削除イベントを処理
-  console.log('🗑️ Removing group post:', postId);
-}
+  async function remove(id) {
+    const { error } = await client.from(table).delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  function subscribe(boardId, onChange) {
+    if (channel) client.removeChannel(channel);
+    channel = client.channel('group-posts:' + boardId)
+      .on('postgres_changes', { event: '*', schema: 'public', table, filter: 'board_id=eq.' + boardId }, onChange)
+      .subscribe();
+    return channel;
+  }
+
+  window.GroupBoardStore = { ready: true, list, create, update, remove, subscribe };
+})();
