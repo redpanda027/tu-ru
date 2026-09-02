@@ -130,3 +130,26 @@ A: はい。ボード ID が違えば別のデータになります。
 
 **Q: セキュリティは大丈夫ですか？**
 A: 基本的には OK ですが、必要に応じて行レベルセキュリティ（RLS）を強化できます。
+
+---
+
+## 🔧 トラブルシューティング: 書き込みが 401 (RLS 違反) になる場合
+
+`ikken_notes` への投稿が「new row violates row-level security policy」で失敗する場合は、
+Supabase ダッシュボードの SQL Editor で以下を実行してポリシーを修復してください
+（旧ポリシーが一部欠けている状態になります）:
+
+```sql
+-- 既存のポリシーを削除して作り直す
+DROP POLICY IF EXISTS "Anyone can read" ON ikken_notes;
+DROP POLICY IF EXISTS "Anyone can insert" ON ikken_notes;
+DROP POLICY IF EXISTS "Anyone can update" ON ikken_notes;
+DROP POLICY IF EXISTS "Anyone can delete" ON ikken_notes;
+
+CREATE POLICY "Anyone can read"   ON ikken_notes FOR SELECT USING (TRUE);
+CREATE POLICY "Anyone can insert" ON ikken_notes FOR INSERT WITH CHECK (TRUE);
+CREATE POLICY "Anyone can update" ON ikken_notes FOR UPDATE USING (TRUE);
+CREATE POLICY "Anyone can delete" ON ikken_notes FOR DELETE USING (TRUE);
+```
+
+実行後、もう一度ボードを開いて投稿できるか確認してください。

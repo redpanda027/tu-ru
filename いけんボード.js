@@ -12,11 +12,21 @@
   }
 
   function getBoardId(){
-    let boardId = localStorage.getItem('ikkenboard_id');
+    // 共有URLの ?boardId= を最優先（他端末と同じボードを見る）
+    const params = new URLSearchParams(location.search);
+    let boardId = params.get('boardId');
+    if (boardId) {
+      localStorage.setItem('ikkenboard_id', boardId);
+      return boardId;
+    }
+    boardId = localStorage.getItem('ikkenboard_id');
     if(!boardId){
       boardId = generateBoardId();
       localStorage.setItem('ikkenboard_id', boardId);
     }
+    // URL に反映して共有リンクと一致させる
+    params.set('boardId', boardId);
+    history.replaceState(null, '', location.pathname + '?' + params.toString());
     return boardId;
   }
 
@@ -31,12 +41,16 @@
   function updateShareLinks(){
     const boardId = getBoardId();
     boardIdDisplay.value = boardId;
-    
+
     const shareUrl = `${window.location.origin}${window.location.pathname}?boardId=${boardId}`;
     shareUrlDisplay.value = shareUrl;
-    
-    // QR コード生成
+
+    // QR コード生成（QRCode ライブラリが読めない環境ではスキップ）
     qrContainer.innerHTML = '';
+    if (typeof QRCode === 'undefined') {
+      console.warn('ℹ️ QRCode ライブラリが利用できないため QR は表示されません');
+      return;
+    }
     new QRCode(qrContainer, {
       text: shareUrl,
       width: 120,
@@ -70,14 +84,14 @@
     // 古い参加者情報をクリア（1時間以上前）
     const now = Date.now();
     participants = participants.filter(p => now - p.timestamp < 3600000);
-    
+
     // 自分のデバイスを追加
-    const deviceId = localStorage.getItem('ikkenboard_device_id') || 
+    const deviceId = localStorage.getItem('ikkenboard_device_id') ||
                      ('d' + Math.random().toString(36).substr(2, 9));
     if(!localStorage.getItem('ikkenboard_device_id')){
       localStorage.setItem('ikkenboard_device_id', deviceId);
     }
-    
+
     if(!participants.find(p => p.id === deviceId)){
       participants.push({ id: deviceId, timestamp: now });
     } else {
@@ -102,14 +116,14 @@
     const boardId = getBoardId();
     const key = `ikkenboard_participants_${boardId}`;
     const participants = JSON.parse(localStorage.getItem(key) || '[]');
-    
-    participantsList.innerHTML = participants.map((p, i) => 
+
+    participantsList.innerHTML = participants.map((p, i) =>
       `<div class="flex items-center gap-2 p-2 bg-panel2 rounded text-xs">
         <span class="w-2 h-2 rounded-full bg-amber"></span>
         <span class="text-muted">デバイス ${i + 1}</span>
       </div>`
     ).join('');
-    
+
     participantsModal.classList.remove('hidden');
   }
 
@@ -230,6 +244,10 @@
       if(!dragging) return;
       dragging = false;
       try{ el.releasePointerCapture(e.pointerId); }catch(err){}
+      // ドラッグ後の位置を他端末へ同期
+      if (window.IkkenSync && window.IkkenSync.ready) {
+        IkkenSync.update(note.id, { x: note.x, y: note.y, z: note.z }).catch(() => {});
+      }
     }
     el.addEventListener('pointerup', endDrag);
     el.addEventListener('pointercancel', endDrag);
@@ -245,20 +263,17 @@
     el.style.zIndex = note.z;
     el.innerHTML = `
       <button type="button" class="note-del absolute top-1 right-1.5 text-white/70 hover:text-white text-base leading-none px-1" aria-label="この意見を削除" title="削除">×</button>
-      ${note.name ? `<div class="text-[10px] text-white/75 mb-1 font-mono">${escapeHtml(note.name)}</div>` : ''}
-      <div class="break-words whitespace-pre-wrap">${escapeHtml(note.text)}</div>
+      <div class="note-text">${note.name ? `<div class="text-[10px] text-white/75 mb-1 font-mono">${escapeHtml(note.name)}</div>` : ''}<div class="break-words whitespace-pre-wrap">${escapeHtml(note.text)}</div></div>
     `;
     el.querySelector('.note-del').addEventListener('click', () => {
       notes = notes.filter(n => n.id !== note.id);
       el.remove();
       updateCountBadges();
       updateEmptyState();
-      
+
       // Supabase から削除（失敗してもローカルでは動作）
-      if (typeof deleteNoteFromSupabase !== 'undefined') {
-        deleteNoteFromSupabase(note.id).catch(err => {
-          console.log('🗑️ Supabase 削除: ローカルで動作');
-        });
+      if (window.IkkenSync && window.IkkenSync.ready) {
+        IkkenSync.remove(note.id).catch(err => console.log('🗑️ Supabase 削除失敗:', err.message));
       }
     });
     makeDraggable(el, note);
@@ -283,7 +298,7 @@
     }
     const pos = randomPosition();
     const note = {
-      id: 'n' + (++noteSeq),
+      id: crypto.randomUUID ? crypto.randomUUID() : 'n' + Date.now() + '-' + (++noteSeq) + '-' + Math.random().toString(36).slice(2),
       name: nameInput.value.trim(),
       text: text,
       category: selectedCategory,
@@ -297,18 +312,11 @@
     updateEmptyState();
     textInput.value = '';
     textInput.focus();
-    
+
     // Supabase に保存（失敗してもローカルでは動作）
-    if (typeof saveNoteToSupabase !== 'undefined' && typeof getBoardId !== 'undefined') {
-      try {
-        const boardId = getBoardId('ikken');
-        const deviceId = typeof getDeviceId !== 'undefined' ? getDeviceId() : 'unknown';
-        saveNoteToSupabase(boardId, deviceId, note).catch(err => {
-          console.log('💾 Supabase への保存: ローカルで動作');
-        });
-      } catch (err) {
-        console.log('💾 Supabase 保存スキップ:', err.message);
-      }
+    if (window.IkkenSync && window.IkkenSync.ready) {
+      const deviceId = getDeviceId();
+      IkkenSync.save(boardId, note, deviceId).catch(err => console.log('💾 Supabase 保存失敗:', err.message));
     }
   }
 
@@ -357,6 +365,103 @@
       document.exitFullscreen();
     }
   }
+
+  function getDeviceId(){
+    let id = localStorage.getItem('ikkenboard_device_id');
+    if(!id){
+      id = crypto.randomUUID ? crypto.randomUUID() : 'd' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('ikkenboard_device_id', id);
+    }
+    return id;
+  }
+
+  // ===== リアルタイム同期（IkkenSync） =====
+  function upsertRemote(remote){
+    const existing = notes.find(n => n.id === remote.id);
+    if (existing) {
+      existing.name = remote.name || '';
+      existing.text = remote.text;
+      existing.category = remote.category;
+      existing.x = remote.x || 0;
+      existing.y = remote.y || 0;
+      if (existing.el) {
+        existing.el.querySelector('.note-text').innerHTML = `${existing.name ? `<div class="text-[10px] text-white/75 mb-1 font-mono">${escapeHtml(existing.name)}</div>` : ''}<div class="break-words whitespace-pre-wrap">${escapeHtml(existing.text)}</div>`;
+        existing.el.style.left = existing.x + 'px';
+        existing.el.style.top = existing.y + 'px';
+      }
+    } else {
+      const note = {
+        id: remote.id,
+        name: remote.name || '',
+        text: remote.text,
+        category: remote.category,
+        x: remote.x || 0,
+        y: remote.y || 0,
+        z: remote.z || (++zCounter)
+      };
+      notes.push(note);
+      renderNote(note);
+      if (remote.z && Number(remote.z) >= zCounter) zCounter = Number(remote.z) + 1;
+    }
+    updateCountBadges();
+    updateEmptyState();
+  }
+
+  function removeRemoteById(noteId){
+    const note = notes.find(n => n.id === noteId);
+    if (note && note.el) note.el.remove();
+    notes = notes.filter(n => n.id !== noteId);
+    updateCountBadges();
+    updateEmptyState();
+  }
+
+  async function reloadRemote(){
+    try {
+      const rows = await IkkenSync.list(boardId);
+      const localIds = new Set(notes.map(n => n.id));
+      rows.forEach(r => upsertRemote(r));
+      rows.forEach(r => localIds.delete(r.id));
+      // ローカルにしかない付箋は、まだ Supabase 保存が完了していない可能性があるため残す
+      updateCountBadges();
+      updateEmptyState();
+    } catch (err) {
+      console.warn('ℹ️ リロード失敗:', err.message);
+    }
+  }
+
+  function setLive(status){
+    const box = document.getElementById('liveStatus');
+    const dot = document.getElementById('liveDot');
+    const text = document.getElementById('liveText');
+    if (!box || !dot || !text) return;
+    box.classList.remove('hidden');
+    box.classList.add('inline-flex');
+    const map = {
+      SUBSCRIBED: ['bg-emerald-400', 'リアルタイム接続中'],
+      CHANNEL_ERROR: ['bg-rose-400', '接続エラー（再接続中…）'],
+      TIMED_OUT: ['bg-rose-400', 'タイムアウト（再接続中…）'],
+      CLOSED: ['bg-amber', '切断'],
+      CONNECTING: ['bg-amber', '接続中…']
+    };
+    const [color, label] = map[status] || map.CONNECTING;
+    dot.className = 'inline-block w-2 h-2 rounded-full ' + (status === 'SUBSCRIBED' ? 'animate-pulse ' : '') + color;
+    text.textContent = label;
+  }
+
+  (async function initSync(){
+    if (!window.IkkenSync) return;
+    const ready = IkkenSync.init({ upsert: upsertRemote, remove: removeRemoteById, reload: reloadRemote, onStatus: setLive });
+    IkkenSync.ready = ready;
+    if (!ready) return;
+    try {
+      const rows = await IkkenSync.list(boardId);
+      rows.forEach(r => upsertRemote(r));
+    } catch (err) {
+      console.warn('ℹ️ 既存の付箋を読み込めません:', err.message);
+    }
+    setLive('CONNECTING');
+    IkkenSync.subscribe(boardId);
+  })();
 
   addBtn.addEventListener('click', addNote);
   textInput.addEventListener('keydown', (e) => {

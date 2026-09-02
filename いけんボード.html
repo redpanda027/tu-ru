@@ -125,7 +125,10 @@
   </section>
 
   <div class="flex items-center gap-3 flex-wrap mb-3">
-    <div class="flex gap-2 flex-wrap text-xs" id="countBadges"></div>
+    <div class="flex gap-2 flex-wrap text-xs items-center" id="countBadges"></div>
+    <span id="liveStatus" class="hidden items-center gap-1.5 text-xs font-mono border border-line rounded-md px-2.5 py-1">
+      <span id="liveDot" class="inline-block w-2 h-2 rounded-full bg-[#65656b]"></span><span id="liveText">接続中…</span>
+    </span>
     <div class="flex-1"></div>
     <button type="button" id="tidyBtn" class="px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber hover:text-amber">🧹 カテゴリごとに整頓</button>
     <button type="button" id="fullscreenBtn" class="px-3 py-1.5 text-xs border border-line rounded-md hover:border-amber hover:text-amber">⛶ 全画面表示</button>
@@ -162,13 +165,5 @@
 <script src="supabase-config.js"></script>
 <script src="supabase-sync-ikken.js"></script>
 <script src="いけんボード.js"></script>
-<script>
-  // Supabase 同期を初期化
-  if (typeof initializeIkkenBoardSync !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(() => initializeIkkenBoardSync(), 500);
-    });
-  }
-</script>
 </body>
 </html>
