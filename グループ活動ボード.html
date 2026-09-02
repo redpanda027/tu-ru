@@ -220,6 +220,7 @@
           ><span id="liveText">接続中…</span>
         </span>
         <div id="counts" class="flex gap-2 flex-wrap text-xs"></div>
+        <select id="groupFilter" class="hidden ml-auto text-xs border border-line rounded-md bg-panel px-2.5 py-1.5 text-paper focus:outline-none focus:border-amber"></select>
       </div>
       <div
         id="loading"
@@ -422,8 +423,47 @@
           el.append(edit);
           return el;
         }
+        let groupFilterValue = "all";
+        function renderGroupFilter() {
+          const sel = $("groupFilter");
+          const names = [...new Set(posts.map((p) => (p.groupName || "").trim()).filter(Boolean))];
+          sel.classList.toggle("hidden", names.length === 0);
+          sel.replaceChildren(...[
+            (() => { const o = document.createElement("option"); o.value = "all"; o.textContent = "🧩 すべてのグループ（" + names.length + "班）"; return o; })(),
+            ...names.map((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; return o; }),
+          ]);
+          sel.value = names.includes(groupFilterValue) || groupFilterValue === "all" ? groupFilterValue : "all";
+          if (sel.value !== groupFilterValue) groupFilterValue = "all";
+        }
         function render() {
-          elements.cards.replaceChildren(...posts.map(card));
+          renderGroupFilter();
+          const visible = groupFilterValue === "all" ? posts : posts.filter((p) => (p.groupName || "").trim() === groupFilterValue);
+          if (groupFilterValue === "all") {
+            // グループ名ごとにまとめて表示
+            const groups = new Map();
+            posts.forEach((p) => {
+              const name = (p.groupName || "").trim() || "（グループ名なし）";
+              if (!groups.has(name)) groups.set(name, []);
+              groups.get(name).push(p);
+            });
+            const nodes = [];
+            groups.forEach((groupPosts, name) => {
+              const head = document.createElement("div");
+              head.className = "col-span-full flex items-center gap-3 mt-3 first:mt-0";
+              head.innerHTML = '<span class="font-black text-sm"><span class="text-amber mr-1.5">▸</span></span><span class="flex-1 border-t border-line"></span>';
+              head.firstChild.append(
+                (() => { const t = document.createElement("span"); t.textContent = name; return t; })(),
+              );
+              const cnt = document.createElement("span");
+              cnt.className = "text-[10px] text-muted font-mono";
+              cnt.textContent = groupPosts.length + "件";
+              head.firstChild.append(cnt);
+              nodes.push(head, ...groupPosts.map(card));
+            });
+            elements.cards.replaceChildren(...nodes);
+          } else {
+            elements.cards.replaceChildren(...visible.map(card));
+          }
           elements.loading.classList.add("hidden");
           elements.empty.classList.toggle("hidden", posts.length !== 0);
           renderCounts();
@@ -522,6 +562,7 @@
             }
           };
           elements.add.onclick = submit;
+          $("groupFilter").onchange = (e) => { groupFilterValue = e.target.value; render(); };
           elements.activity.onkeydown = (e) => {
             if (e.ctrlKey && e.key === "Enter") {
               e.preventDefault();

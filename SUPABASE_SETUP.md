@@ -153,3 +153,33 @@ CREATE POLICY "Anyone can delete" ON ikken_notes FOR DELETE USING (TRUE);
 ```
 
 実行後、もう一度ボードを開いて投稿できるか確認してください。
+
+---
+
+## 📂 いけんボード: 先生が作るカテゴリ機能（2026-09 追加）
+
+先生がカテゴリを自由に作成・削除でき、生徒はそのカテゴリから選べるようにするには、
+Supabase の SQL Editor で以下を **1回だけ** 実行してください:
+
+```sql
+CREATE TABLE IF NOT EXISTS ikken_categories (
+  id text PRIMARY KEY,
+  board_id text NOT NULL,
+  label text NOT NULL,
+  color text NOT NULL DEFAULT '#f59e0b',
+  sort int NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ikken_categories_board ON ikken_categories(board_id);
+
+ALTER TABLE ikken_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read"   ON ikken_categories FOR SELECT USING (TRUE);
+CREATE POLICY "Anyone can insert" ON ikken_categories FOR INSERT WITH CHECK (TRUE);
+CREATE POLICY "Anyone can update" ON ikken_categories FOR UPDATE USING (TRUE);
+CREATE POLICY "Anyone can delete" ON ikken_categories FOR DELETE USING (TRUE);
+```
+
+※ このテーブルを作らなくてもボード自体は動きます（その場合は既定の
+「賛成・反対・疑問・アイデア」の4カテゴリが使われ、カテゴリ編集は
+その端末内でのみ有効になります）。

@@ -87,5 +87,34 @@
       });
   }
 
-  window.IkkenSync = { init, list, save, update, remove, subscribe };
+  async function listCategories(boardId) {
+    if (!client) return null;
+    try {
+      const { data, error } = await client.from('ikken_categories').select('*').eq('board_id', boardId).order('sort', { ascending: true });
+      if (error) return null; // テーブル未作成などはデフォルトを使用
+      return data || [];
+    } catch { return null; }
+  }
+
+  async function addCategory(boardId, cat) {
+    if (!client) return;
+    const { error } = await client.from('ikken_categories').insert({
+      id: cat.id,
+      board_id: boardId,
+      label: cat.label,
+      color: cat.color,
+      sort: cat.sort || 0
+    });
+    if (error) throw error;
+    broadcast();
+  }
+
+  async function removeCategory(catId) {
+    if (!client) return;
+    const { error } = await client.from('ikken_categories').delete().eq('id', catId);
+    if (error) throw error;
+    broadcast();
+  }
+
+  window.IkkenSync = { init, list, save, update, remove, subscribe, listCategories, addCategory, removeCategory };
 })();

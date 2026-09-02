@@ -1,5 +1,5 @@
 (function(){
-  const CATEGORIES = [
+  const DEFAULT_CATEGORIES = [
     { id: 'agree',    label: '賛成',        color: '#10b981' },
     { id: 'disagree', label: '反対',        color: '#f43f5e' },
     { id: 'question', label: '疑問',        color: '#3b82f6' },
@@ -149,16 +149,18 @@
   const tidyBtn = document.getElementById('tidyBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-  let selectedCategory = CATEGORIES[0].id;
+  let categories = DEFAULT_CATEGORIES.slice();
+
+  let selectedCategory = categories[0].id;
   let notes = [];
   let zCounter = 1;
   let noteSeq = 0;
 
-  function catById(id){ return CATEGORIES.find(c => c.id === id) || CATEGORIES[0]; }
+  function catById(id){ return categories.find(c => c.id === id) || categories[0]; }
 
   function buildChips(){
     chipsWrap.innerHTML = '';
-    CATEGORIES.forEach(cat => {
+    categories.forEach(cat => {
       const chip = document.createElement('button');
       chip.type = 'button';
       const selected = cat.id === selectedCategory;
@@ -176,7 +178,7 @@
 
   function updateCountBadges(){
     countBadges.innerHTML = '';
-    CATEGORIES.forEach(cat => {
+    categories.forEach(cat => {
       const n = notes.filter(note => note.category === cat.id).length;
       const span = document.createElement('span');
       span.className = 'inline-flex items-center gap-1.5 border border-[#323236] rounded-md px-2.5 py-1 text-xs text-[#98979c] font-mono';
@@ -337,7 +339,7 @@
     const noteW = 168, gap = 14;
     const cols = Math.max(1, Math.floor((boardRect.width - gap) / (noteW + gap)));
     let order = [];
-    CATEGORIES.forEach(cat => {
+    categories.forEach(cat => {
       order = order.concat(notes.filter(n => n.category === cat.id));
     });
     order.forEach((note, i) => {
@@ -448,11 +450,106 @@
     text.textContent = label;
   }
 
+  // ===== カテゴリ管理（先生用） =====
+  const CAT_COLORS = ['#10b981','#f43f5e','#3b82f6','#f59e0b','#a78bfa','#22d3ee','#fb7185','#84cc16'];
+
+  function refreshCategoryUI(){
+    if (!categories.find(c => c.id === selectedCategory)) selectedCategory = categories[0].id;
+    buildChips();
+    updateCountBadges();
+    renderCatManager();
+  }
+
+  async function loadCategories(){
+    if (!(window.IkkenSync && IkkenSync.ready)) return;
+    try {
+      const rows = await IkkenSync.listCategories(boardId);
+      if (rows && rows.length > 0) {
+        categories = rows.map(r => ({ id: r.id, label: r.label, color: r.color, sort: r.sort || 0 }));
+      }
+      // rows が空の場合はデフォルトのまま（未設定）
+    } catch (err) {
+      console.warn('ℹ️ カテゴリの読み込みに失敗:', err.message);
+    }
+    refreshCategoryUI();
+  }
+
+  function renderCatManager(){
+    const list = document.getElementById('catManagerList');
+    if (!list) return;
+    list.innerHTML = '';
+    categories.forEach(cat => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 border border-[#323236] rounded-md px-2.5 py-1.5';
+      const swatch = document.createElement('span');
+      swatch.className = 'w-3.5 h-3.5 rounded-sm inline-block shrink-0';
+      swatch.style.background = cat.color;
+      const label = document.createElement('span');
+      label.className = 'text-sm flex-1';
+      label.textContent = cat.label;
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'text-[#98979c] hover:text-rose-400 text-xs px-1';
+      del.textContent = '✕';
+      del.title = 'このカテゴリを削除';
+      del.addEventListener('click', async () => {
+        if (categories.length <= 1) { showStatus('カテゴリが1つもない状態にはできません。', 'error'); return; }
+        if (!window.confirm(`カテゴリ「${cat.label}」を削除しますか？（付箋は削除されません）`)) return;
+        categories = categories.filter(c => c.id !== cat.id);
+        if (window.IkkenSync && IkkenSync.ready) {
+          try { await IkkenSync.removeCategory(cat.id); } catch (err) { console.warn('ℹ️ カテゴリ削除の共有に失敗:', err.message); }
+        }
+        refreshCategoryUI();
+      });
+      row.append(swatch, label, del);
+      list.appendChild(row);
+    });
+  }
+
+  function initCatManager(){
+    const openBtn = document.getElementById('catManageBtn');
+    const modal = document.getElementById('catManagerModal');
+    if (!openBtn || !modal) return;
+    const closeBtn = document.getElementById('catManagerClose');
+    const nameIn = document.getElementById('catNewName');
+    const colorIn = document.getElementById('catNewColor');
+    const addBtn2 = document.getElementById('catAddBtn');
+
+    openBtn.addEventListener('click', () => {
+      renderCatManager();
+      modal.classList.remove('hidden');
+    });
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    addBtn2.addEventListener('click', async () => {
+      const label = nameIn.value.trim();
+      if (!label) { showStatus('カテゴリ名を入力してください。', 'error'); nameIn.focus(); return; }
+      if (categories.some(c => c.label === label)) { showStatus('同じ名前のカテゴリがあります。', 'error'); return; }
+      const cat = {
+        id: crypto.randomUUID ? crypto.randomUUID() : 'cat' + Date.now() + Math.random().toString(36).slice(2),
+        label,
+        color: colorIn.value,
+        sort: categories.length
+      };
+      categories.push(cat);
+      if (window.IkkenSync && IkkenSync.ready) {
+        try { await IkkenSync.addCategory(boardId, cat); } catch (err) { showStatus('カテゴリの共有に失敗しました。', 'error'); console.warn(err); }
+      }
+      nameIn.value = '';
+      refreshCategoryUI();
+      showStatus(`カテゴリ「${label}」を追加しました。`, 'ok');
+    });
+    nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addBtn2.click(); } });
+  }
+
   (async function initSync(){
     if (!window.IkkenSync) return;
-    const ready = IkkenSync.init({ upsert: upsertRemote, remove: removeRemoteById, reload: reloadRemote, onStatus: setLive });
+    const ready = IkkenSync.init({ upsert: upsertRemote, remove: removeRemoteById, reload: async () => { await reloadRemote(); await loadCategories(); }, onStatus: setLive });
     IkkenSync.ready = ready;
+    initCatManager();
     if (!ready) return;
+    await loadCategories();
     try {
       const rows = await IkkenSync.list(boardId);
       rows.forEach(r => upsertRemote(r));

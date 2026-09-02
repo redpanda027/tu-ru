@@ -118,11 +118,34 @@
       <button type="button" id="addBtn" class="px-4 py-2 text-sm font-bold text-amberink bg-amber rounded-md hover:brightness-110">＋ 追加する</button>
     </div>
     <div class="mt-4">
-      <label class="block text-xs text-muted mb-1.5">カテゴリ</label>
+      <div class="flex items-center mb-1.5">
+        <label class="block text-xs text-muted">カテゴリ</label>
+        <button type="button" id="catManageBtn" class="ml-auto px-2.5 py-1 text-xs border border-line rounded-md text-muted hover:border-amber hover:text-amber transition">⚙ カテゴリを編集（先生用）</button>
+      </div>
       <div class="flex gap-2 flex-wrap" id="categoryChips"></div>
     </div>
     <div id="statusMsg" class="hidden"></div>
   </section>
+
+  <!-- カテゴリ管理モーダル（先生用） -->
+  <div id="catManagerModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-panel border border-line rounded-md p-5 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold">⚙ カテゴリを編集（先生用）</h3>
+        <button type="button" id="catManagerClose" class="text-muted hover:text-paper text-lg leading-none">×</button>
+      </div>
+      <p class="text-xs text-muted mb-3">作成したカテゴリは、このボードを開いている全員に共有されます。既定のカテゴリは最初の追加で置き換わります。</p>
+      <div id="catManagerList" class="space-y-2 mb-4"></div>
+      <div class="border-t border-line pt-4">
+        <label class="block text-xs text-muted mb-1.5">カテゴリを追加</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="catNewName" placeholder="例) 質問・ふしぎ" class="flex-1 border border-line rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-amber" maxlength="40">
+          <input type="color" id="catNewColor" value="#f59e0b" class="w-10 h-9 rounded-md cursor-pointer bg-transparent border border-line p-1">
+          <button type="button" id="catAddBtn" class="px-3 py-1.5 text-xs font-bold text-amberink bg-amber rounded-md hover:brightness-110">追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="flex items-center gap-3 flex-wrap mb-3">
     <div class="flex gap-2 flex-wrap text-xs items-center" id="countBadges"></div>
