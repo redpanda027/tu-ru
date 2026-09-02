@@ -1,91 +1,555 @@
 <!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RPツールズ | グループ活動ボード</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Zen Kaku Gothic New','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{ink:'#121214',panel:'#1a1a1d',panel2:'#202024',line:'#323236',linestrong:'#46464c',paper:'#f5f4f0',muted:'#98979c',amber:'#ffb020',amberink:'#1a1200'}}}}</script>
-  <style>
-    body{background:#121214 radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.4px);background-size:24px 24px}
-    input,textarea{background:#111113!important;color:#f5f4f0!important} input::placeholder,textarea::placeholder{color:#65656b} textarea{resize:vertical}
-    .group-card{border-top-width:3px}.state-todo{border-top-color:#65656b}.state-doing{border-top-color:#ffb020}.state-done{border-top-color:#34d399}
-    .chip{border:1px solid #323236;border-radius:999px;padding:5px 10px;font-size:12px;color:#98979c}.chip.selected{border-color:#ffb020;background:#34280c;color:#ffd27a;font-weight:700}
-    .display-text{white-space:pre-wrap;overflow-wrap:anywhere}.optional{border-top:1px solid #323236;margin-top:12px;padding-top:12px}
-  </style>
-</head>
-<body class="font-sans text-paper antialiased">
-  <header class="border-b border-line border-t-[3px] border-t-amber">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between gap-4 flex-wrap">
-      <a href="index.html" class="font-black text-lg"><span class="inline-block w-2.5 h-2.5 bg-amber mr-3"></span>RPツールズ</a>
-      <nav class="text-sm flex gap-5 text-muted"><a href="席替えツール.html" class="hover:text-paper">席替えツール</a><a href="いけんボード.html" class="hover:text-paper">いけんボード</a><span class="text-amber font-bold border-b-2 border-amber">グループ活動ボード</span></nav>
-    </div>
-  </header>
-  <main class="max-w-6xl mx-auto px-6 py-10">
-    <h1 class="text-xl font-black mb-1">🧩 グループ活動ボード</h1>
-    <p class="text-sm text-muted mb-5">グループごとの活動報告を付箋形式で共有できます。投稿は保存され、同じボードを開く全員に反映されます。</p>
-
-    <section class="bg-panel border border-line rounded-md p-4 mb-6">
-      <h2 class="text-xs font-bold mb-3 uppercase tracking-wider">🔗 ボードを共有する</h2>
-      <div class="grid md:grid-cols-[1fr_auto] gap-3 items-end">
-        <label class="text-xs text-muted">このボードのID
-          <input id="boardId" class="mt-1.5 w-full border border-line rounded-md px-3 py-2 font-mono text-sm" readonly>
-        </label>
-        <button id="copyLink" type="button" class="px-4 py-2 text-sm border border-line rounded-md hover:border-amber hover:text-amber">🔗 共有リンクをコピー</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RPツールズ | グループ活動ボード</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Zen Kaku Gothic New", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+              ink: "#121214",
+              panel: "#1a1a1d",
+              panel2: "#202024",
+              line: "#323236",
+              linestrong: "#46464c",
+              paper: "#f5f4f0",
+              muted: "#98979c",
+              amber: "#ffb020",
+              amberink: "#1a1200",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background: #121214
+          radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1.4px);
+        background-size: 24px 24px;
+      }
+      input,
+      textarea {
+        background: #111113 !important;
+        color: #f5f4f0 !important;
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: #65656b;
+      }
+      textarea {
+        resize: vertical;
+      }
+      .group-card {
+        border-top-width: 3px;
+      }
+      .state-todo {
+        border-top-color: #65656b;
+      }
+      .state-doing {
+        border-top-color: #ffb020;
+      }
+      .state-done {
+        border-top-color: #34d399;
+      }
+      .chip {
+        border: 1px solid #323236;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 12px;
+        color: #98979c;
+      }
+      .chip.selected {
+        border-color: #ffb020;
+        background: #34280c;
+        color: #ffd27a;
+        font-weight: 700;
+      }
+      .display-text {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .optional {
+        border-top: 1px solid #323236;
+        margin-top: 12px;
+        padding-top: 12px;
+      }
+    </style>
+  </head>
+  <body class="font-sans text-paper antialiased">
+    <header class="border-b border-line border-t-[3px] border-t-amber">
+      <div
+        class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between gap-4 flex-wrap"
+      >
+        <a href="index.html" class="font-black text-lg"
+          ><span class="inline-block w-2.5 h-2.5 bg-amber mr-3"></span
+          >RPツールズ</a
+        >
+        <nav class="text-sm flex gap-5 text-muted">
+          <a href="席替えツール.html" class="hover:text-paper">席替えツール</a
+          ><a href="いけんボード.html" class="hover:text-paper">いけんボード</a
+          ><span class="text-amber font-bold border-b-2 border-amber"
+            >グループ活動ボード</span
+          >
+        </nav>
       </div>
-      <p class="mt-3 text-xs text-muted">このリンクを開いた端末は同じ投稿を見られます。</p>
-    </section>
+    </header>
+    <main class="max-w-6xl mx-auto px-6 py-10">
+      <h1 class="text-xl font-black mb-1">🧩 グループ活動ボード</h1>
+      <p class="text-sm text-muted mb-5">
+        グループごとの活動報告を付箋形式で共有できます。投稿は保存され、同じボードを開く全員に反映されます。
+      </p>
 
-    <section class="bg-panel border border-line rounded-md p-5 mb-6">
-      <h2 class="text-sm font-bold mb-4"><span class="font-mono text-amber text-xs mr-2">01</span>活動報告を投稿する</h2>
-      <div class="mb-4"><label class="text-xs text-muted font-bold block mb-1.5" for="groupName">グループ名</label><input id="groupName" class="w-full border border-line rounded-md px-3 py-2 text-sm" placeholder="例）1班、環境チーム" maxlength="80"></div>
-      <div class="mb-4"><label class="text-xs text-muted font-bold block mb-1.5" for="activity">活動内容</label><textarea id="activity" class="w-full border border-line rounded-md p-3 text-sm min-h-[90px]" placeholder="例）地域の環境問題について調査しています" maxlength="2000"></textarea></div>
-      <div class="grid md:grid-cols-2 gap-4 mb-4"><div><label class="text-xs text-muted font-bold block mb-1.5" for="person">担当者 <span class="font-normal text-[#65656b]">任意</span></label><input id="person" class="w-full border border-line rounded-md px-3 py-2 text-sm" placeholder="例）山田、佐藤" maxlength="160"></div><div><label class="text-xs text-muted font-bold block mb-1.5" for="purpose">目的 <span class="font-normal text-[#65656b]">任意</span></label><input id="purpose" class="w-full border border-line rounded-md px-3 py-2 text-sm" placeholder="例）地域の課題を知るため" maxlength="500"></div></div>
-      <div class="flex justify-end"><button id="addPost" type="button" class="px-4 py-2 text-sm font-bold bg-amber text-amberink rounded-md hover:brightness-110">＋ 付箋を投稿</button></div>
-      <p id="message" role="status" class="hidden text-sm px-3 py-2 rounded-md mt-3"></p>
-    </section>
-    <div id="counts" class="flex gap-2 flex-wrap text-xs mb-4"></div>
-    <div id="loading" class="border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono">投稿を読み込んでいます…</div>
-    <div id="empty" class="hidden border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono">まだ活動報告がありません。上のフォームから投稿してください。</div>
-    <div id="cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-  </main>
-  <footer class="border-t border-line py-8 mt-10 text-center text-xs text-muted font-mono">RPツールズ | グループ活動ボード</footer>
+      <section class="bg-panel border border-line rounded-md p-4 mb-6">
+        <h2 class="text-xs font-bold mb-3 uppercase tracking-wider">
+          🔗 ボードを共有する
+        </h2>
+        <div class="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+          <label class="text-xs text-muted"
+            >このボードのID
+            <input
+              id="boardId"
+              class="mt-1.5 w-full border border-line rounded-md px-3 py-2 font-mono text-sm"
+              readonly
+            />
+          </label>
+          <button
+            id="copyLink"
+            type="button"
+            class="px-4 py-2 text-sm border border-line rounded-md hover:border-amber hover:text-amber"
+          >
+            🔗 共有リンクをコピー
+          </button>
+        </div>
+        <p class="mt-3 text-xs text-muted">
+          このリンクを開いた端末は同じ投稿を見られます。
+        </p>
+      </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="supabase-sync-group.js"></script>
-  <script>
-  (() => {
-    'use strict';
-    const $ = id => document.getElementById(id);
-    const elements = { boardId:$('boardId'), cards:$('cards'), counts:$('counts'), loading:$('loading'), empty:$('empty'), message:$('message'), add:$('addPost'), group:$('groupName'), activity:$('activity'), person:$('person'), purpose:$('purpose') };
-    const statuses = { todo:'未着手', doing:'進行中', done:'完了' };
-    let boardId, posts = [];
+      <section class="bg-panel border border-line rounded-md p-5 mb-6">
+        <h2 class="text-sm font-bold mb-4">
+          <span class="font-mono text-amber text-xs mr-2">01</span
+          >活動報告を投稿する
+        </h2>
+        <div class="mb-4">
+          <label
+            class="text-xs text-muted font-bold block mb-1.5"
+            for="groupName"
+            >グループ名</label
+          ><input
+            id="groupName"
+            class="w-full border border-line rounded-md px-3 py-2 text-sm"
+            placeholder="例）1班、環境チーム"
+            maxlength="80"
+          />
+        </div>
+        <div class="mb-4">
+          <label
+            class="text-xs text-muted font-bold block mb-1.5"
+            for="activity"
+            >活動内容</label
+          ><textarea
+            id="activity"
+            class="w-full border border-line rounded-md p-3 text-sm min-h-[90px]"
+            placeholder="例）地域の環境問題について調査しています"
+            maxlength="2000"
+          ></textarea>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label
+              class="text-xs text-muted font-bold block mb-1.5"
+              for="person"
+              >担当者
+              <span class="font-normal text-[#65656b]">任意</span></label
+            ><input
+              id="person"
+              class="w-full border border-line rounded-md px-3 py-2 text-sm"
+              placeholder="例）山田、佐藤"
+              maxlength="160"
+            />
+          </div>
+          <div>
+            <label
+              class="text-xs text-muted font-bold block mb-1.5"
+              for="purpose"
+              >目的 <span class="font-normal text-[#65656b]">任意</span></label
+            ><input
+              id="purpose"
+              class="w-full border border-line rounded-md px-3 py-2 text-sm"
+              placeholder="例）地域の課題を知るため"
+              maxlength="500"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button
+            id="addPost"
+            type="button"
+            class="px-4 py-2 text-sm font-bold bg-amber text-amberink rounded-md hover:brightness-110"
+          >
+            ＋ 付箋を投稿
+          </button>
+        </div>
+        <p
+          id="message"
+          role="status"
+          class="hidden text-sm px-3 py-2 rounded-md mt-3"
+        ></p>
+      </section>
+      <div class="flex items-center gap-3 flex-wrap mb-4">
+        <span
+          id="liveStatus"
+          class="hidden items-center gap-1.5 text-xs font-mono border border-line rounded-md px-2.5 py-1"
+        >
+          <span
+            id="liveDot"
+            class="inline-block w-2 h-2 rounded-full bg-[#65656b]"
+          ></span
+          ><span id="liveText">接続中…</span>
+        </span>
+        <div id="counts" class="flex gap-2 flex-wrap text-xs"></div>
+      </div>
+      <div
+        id="loading"
+        class="border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono"
+      >
+        投稿を読み込んでいます…
+      </div>
+      <div
+        id="empty"
+        class="hidden border border-dashed border-line rounded-md p-10 text-center text-sm text-muted font-mono"
+      >
+        まだ活動報告がありません。上のフォームから投稿してください。
+      </div>
+      <div
+        id="cards"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+      ></div>
+    </main>
+    <footer
+      class="border-t border-line py-8 mt-10 text-center text-xs text-muted font-mono"
+    >
+      RPツールズ | グループ活動ボード
+    </footer>
 
-    function deviceId() { let id=localStorage.getItem('group-board-device-id'); if(!id){ id=crypto.randomUUID ? crypto.randomUUID() : 'device-'+Date.now()+'-'+Math.random().toString(36).slice(2); localStorage.setItem('group-board-device-id',id); } return id; }
-    function getBoardId() { const params=new URLSearchParams(location.search); let id=params.get('board'); if(!id){ id=crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2,14); params.set('board',id); history.replaceState(null,'',location.pathname+'?'+params.toString()); } return id; }
-    function message(text,type='success') { elements.message.textContent=text; elements.message.className='text-sm px-3 py-2 rounded-md mt-3 '+(type==='error'?'bg-rose-950 text-rose-300 border border-rose-800':'bg-emerald-950 text-emerald-300 border border-emerald-800'); clearTimeout(message.timer); message.timer=setTimeout(()=>elements.message.className='hidden',5000); }
-    function time(iso) { return new Intl.DateTimeFormat('ja-JP',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso)); }
-    function renderCounts() { elements.counts.replaceChildren(...Object.entries(statuses).map(([id,label])=>{ const tag=document.createElement('span'); tag.className='border border-line rounded-md px-2.5 py-1 text-muted font-mono'; tag.textContent=label+' '+posts.filter(p=>p.status===id).length; return tag; }), (()=>{const tag=document.createElement('span');tag.className='border border-linestrong rounded-md px-2.5 py-1 font-bold font-mono';tag.textContent='合計 '+posts.length+'件';return tag;})()); }
-    function field(label,value) { if(!value) return null; const box=document.createElement('div'); box.className='optional'; const title=document.createElement('div');title.className='text-xs text-muted mb-1';title.textContent=label; const content=document.createElement('div');content.className='display-text text-sm';content.textContent=value; box.append(title,content);return box; }
-    function card(post) {
-      const el=document.createElement('article'); el.className='group-card bg-panel border border-line rounded-md p-4 state-'+post.status;
-      const head=document.createElement('div');head.className='flex justify-between gap-3 mb-4'; const title=document.createElement('div');title.innerHTML='<div class="text-xs text-muted mb-1">グループ名</div>'; const name=document.createElement('div');name.className='font-black text-lg break-words';name.textContent=post.groupName;title.append(name); const del=document.createElement('button');del.className='text-muted hover:text-rose-400';del.textContent='✕';del.title='削除';del.onclick=async()=>{if(confirm('この活動報告を削除しますか？')) await action(()=>GroupBoardStore.remove(post.id),'活動報告を削除しました。');};head.append(title,del);
-      const body=document.createElement('div');body.innerHTML='<div class="text-xs text-muted mb-1">活動内容</div>';const activity=document.createElement('div');activity.className='display-text text-sm leading-relaxed';activity.textContent=post.activity;body.append(activity);el.append(head,body); [field('担当者',post.person),field('目的',post.purpose)].forEach(x=>x&&el.append(x));
-      const progress=document.createElement('div');progress.className='optional';progress.innerHTML='<div class="text-xs text-muted mb-2">進行状況</div>';const row=document.createElement('div');row.className='flex gap-2 flex-wrap';Object.entries(statuses).forEach(([id,label])=>{const b=document.createElement('button');b.className='chip '+(post.status===id?'selected':'');b.textContent=label;b.onclick=async()=>await action(()=>GroupBoardStore.update(post.id,{...post,status:id}),'進行状況を更新しました。');row.append(b);});progress.append(row);el.append(progress);
-      const meta=document.createElement('div');meta.className='border-t border-line pt-3 mt-3 text-[10px] text-[#65656b] font-mono';meta.textContent='投稿日：'+time(post.createdAt)+(post.updatedAt!==post.createdAt?' ／ 更新：'+time(post.updatedAt):'');el.append(meta);
-      const edit=document.createElement('button');edit.className='mt-3 px-3 py-1.5 text-xs font-bold border border-line rounded-md text-muted hover:text-paper';edit.textContent='編集';edit.onclick=()=>openEdit(post,el);el.append(edit);return el;
-    }
-    function render() { elements.cards.replaceChildren(...posts.map(card)); elements.loading.classList.add('hidden');elements.empty.classList.toggle('hidden',posts.length!==0);renderCounts(); }
-    async function action(work,success) { try { elements.add.disabled=true; await work(); message(success); await load(); } catch(error) { console.error(error); message('保存できませんでした：'+(error.message||'通信を確認してください。'),'error'); } finally { elements.add.disabled=false; } }
-    function openEdit(post,card) { if(card.querySelector('form')) return; const form=document.createElement('form');form.className='mt-3 border-t border-line pt-3 space-y-3';form.innerHTML='<label class="block text-xs text-muted">グループ名<input name="groupName" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" required maxlength="80"></label><label class="block text-xs text-muted">活動内容<textarea name="activity" class="mt-1 w-full border border-line rounded-md p-2 text-sm" required maxlength="2000"></textarea></label><label class="block text-xs text-muted">担当者<input name="person" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" maxlength="160"></label><label class="block text-xs text-muted">目的<input name="purpose" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" maxlength="500"></label><div class="flex justify-end gap-2"><button type="button" class="cancel px-3 py-1.5 text-xs border border-line rounded-md">キャンセル</button><button class="px-3 py-1.5 text-xs font-bold bg-amber text-amberink rounded-md">保存</button></div>'; ['groupName','activity','person','purpose'].forEach(key=>form.elements[key].value=post[key]||'');form.querySelector('.cancel').onclick=()=>form.remove();form.onsubmit=async e=>{e.preventDefault();const v=Object.fromEntries(new FormData(form));await action(()=>GroupBoardStore.update(post.id,{...post,...v}),'活動報告を編集しました。');};card.append(form);form.elements.groupName.focus(); }
-    async function load() { posts=await GroupBoardStore.list(boardId);render(); }
-    async function submit() { const values={groupName:elements.group.value.trim(),activity:elements.activity.value.trim(),person:elements.person.value.trim(),purpose:elements.purpose.value.trim()};if(!values.groupName||!values.activity){message('グループ名と活動内容を入力してください。','error');return;}await action(async()=>{await GroupBoardStore.create(boardId,values,deviceId());elements.group.value=elements.activity.value=elements.person.value=elements.purpose.value='';},'活動報告を投稿しました。'); }
-    async function start() { boardId=getBoardId();elements.boardId.value=boardId;$('copyLink').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);message('共有リンクをコピーしました。');}catch{message('リンクをコピーできませんでした。','error');}};elements.add.onclick=submit;elements.activity.onkeydown=e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();submit();}};if(!window.GroupBoardStore||!GroupBoardStore.ready){elements.loading.textContent=(window.GroupBoardStore&&GroupBoardStore.error)||'Supabase を読み込めませんでした。';return;}try{await load();GroupBoardStore.subscribe(boardId,()=>load().catch(console.error));}catch(error){console.error(error);elements.loading.textContent='投稿を読み込めませんでした：'+error.message;}}
-    start();
-  })();
-  </script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-sync-group.js"></script>
+    <script>
+      (() => {
+        "use strict";
+        const $ = (id) => document.getElementById(id);
+        const elements = {
+          boardId: $("boardId"),
+          cards: $("cards"),
+          counts: $("counts"),
+          loading: $("loading"),
+          empty: $("empty"),
+          message: $("message"),
+          add: $("addPost"),
+          group: $("groupName"),
+          activity: $("activity"),
+          person: $("person"),
+          purpose: $("purpose"),
+        };
+        const statuses = { todo: "未着手", doing: "進行中", done: "完了" };
+        let boardId,
+          posts = [];
+
+        function deviceId() {
+          let id = localStorage.getItem("group-board-device-id");
+          if (!id) {
+            id = crypto.randomUUID
+              ? crypto.randomUUID()
+              : "device-" +
+                Date.now() +
+                "-" +
+                Math.random().toString(36).slice(2);
+            localStorage.setItem("group-board-device-id", id);
+          }
+          return id;
+        }
+        function getBoardId() {
+          const params = new URLSearchParams(location.search);
+          let id = params.get("board");
+          if (!id) {
+            id = crypto.randomUUID
+              ? crypto.randomUUID()
+              : Math.random().toString(36).slice(2, 14);
+            params.set("board", id);
+            history.replaceState(
+              null,
+              "",
+              location.pathname + "?" + params.toString(),
+            );
+          }
+          return id;
+        }
+        function message(text, type = "success") {
+          elements.message.textContent = text;
+          elements.message.className =
+            "text-sm px-3 py-2 rounded-md mt-3 " +
+            (type === "error"
+              ? "bg-rose-950 text-rose-300 border border-rose-800"
+              : "bg-emerald-950 text-emerald-300 border border-emerald-800");
+          clearTimeout(message.timer);
+          message.timer = setTimeout(
+            () => (elements.message.className = "hidden"),
+            5000,
+          );
+        }
+        function time(iso) {
+          return new Intl.DateTimeFormat("ja-JP", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(iso));
+        }
+        function renderCounts() {
+          elements.counts.replaceChildren(
+            ...Object.entries(statuses).map(([id, label]) => {
+              const tag = document.createElement("span");
+              tag.className =
+                "border border-line rounded-md px-2.5 py-1 text-muted font-mono";
+              tag.textContent =
+                label + " " + posts.filter((p) => p.status === id).length;
+              return tag;
+            }),
+            (() => {
+              const tag = document.createElement("span");
+              tag.className =
+                "border border-linestrong rounded-md px-2.5 py-1 font-bold font-mono";
+              tag.textContent = "合計 " + posts.length + "件";
+              return tag;
+            })(),
+          );
+        }
+        function field(label, value) {
+          if (!value) return null;
+          const box = document.createElement("div");
+          box.className = "optional";
+          const title = document.createElement("div");
+          title.className = "text-xs text-muted mb-1";
+          title.textContent = label;
+          const content = document.createElement("div");
+          content.className = "display-text text-sm";
+          content.textContent = value;
+          box.append(title, content);
+          return box;
+        }
+        function card(post) {
+          const el = document.createElement("article");
+          el.className =
+            "group-card bg-panel border border-line rounded-md p-4 state-" +
+            post.status;
+          const head = document.createElement("div");
+          head.className = "flex justify-between gap-3 mb-4";
+          const title = document.createElement("div");
+          title.innerHTML =
+            '<div class="text-xs text-muted mb-1">グループ名</div>';
+          const name = document.createElement("div");
+          name.className = "font-black text-lg break-words";
+          name.textContent = post.groupName;
+          title.append(name);
+          const del = document.createElement("button");
+          del.className = "text-muted hover:text-rose-400";
+          del.textContent = "✕";
+          del.title = "削除";
+          del.onclick = async () => {
+            if (confirm("この活動報告を削除しますか？"))
+              await action(
+                () => GroupBoardStore.remove(post.id),
+                "活動報告を削除しました。",
+              );
+          };
+          head.append(title, del);
+          const body = document.createElement("div");
+          body.innerHTML =
+            '<div class="text-xs text-muted mb-1">活動内容</div>';
+          const activity = document.createElement("div");
+          activity.className = "display-text text-sm leading-relaxed";
+          activity.textContent = post.activity;
+          body.append(activity);
+          el.append(head, body);
+          [field("担当者", post.person), field("目的", post.purpose)].forEach(
+            (x) => x && el.append(x),
+          );
+          const progress = document.createElement("div");
+          progress.className = "optional";
+          progress.innerHTML =
+            '<div class="text-xs text-muted mb-2">進行状況</div>';
+          const row = document.createElement("div");
+          row.className = "flex gap-2 flex-wrap";
+          Object.entries(statuses).forEach(([id, label]) => {
+            const b = document.createElement("button");
+            b.className = "chip " + (post.status === id ? "selected" : "");
+            b.textContent = label;
+            b.onclick = async () =>
+              await action(
+                () => GroupBoardStore.update(post.id, { ...post, status: id }),
+                "進行状況を更新しました。",
+              );
+            row.append(b);
+          });
+          progress.append(row);
+          el.append(progress);
+          const meta = document.createElement("div");
+          meta.className =
+            "border-t border-line pt-3 mt-3 text-[10px] text-[#65656b] font-mono";
+          meta.textContent =
+            "投稿日：" +
+            time(post.createdAt) +
+            (post.updatedAt !== post.createdAt
+              ? " ／ 更新：" + time(post.updatedAt)
+              : "");
+          el.append(meta);
+          const edit = document.createElement("button");
+          edit.className =
+            "mt-3 px-3 py-1.5 text-xs font-bold border border-line rounded-md text-muted hover:text-paper";
+          edit.textContent = "編集";
+          edit.onclick = () => openEdit(post, el);
+          el.append(edit);
+          return el;
+        }
+        function render() {
+          elements.cards.replaceChildren(...posts.map(card));
+          elements.loading.classList.add("hidden");
+          elements.empty.classList.toggle("hidden", posts.length !== 0);
+          renderCounts();
+        }
+        async function action(work, success) {
+          try {
+            elements.add.disabled = true;
+            await work();
+            message(success);
+            await load();
+          } catch (error) {
+            console.error(error);
+            message(
+              "保存できませんでした：" +
+                (error.message || "通信を確認してください。"),
+              "error",
+            );
+          } finally {
+            elements.add.disabled = false;
+          }
+        }
+        function openEdit(post, card) {
+          if (card.querySelector("form")) return;
+          const form = document.createElement("form");
+          form.className = "mt-3 border-t border-line pt-3 space-y-3";
+          form.innerHTML =
+            '<label class="block text-xs text-muted">グループ名<input name="groupName" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" required maxlength="80"></label><label class="block text-xs text-muted">活動内容<textarea name="activity" class="mt-1 w-full border border-line rounded-md p-2 text-sm" required maxlength="2000"></textarea></label><label class="block text-xs text-muted">担当者<input name="person" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" maxlength="160"></label><label class="block text-xs text-muted">目的<input name="purpose" class="mt-1 w-full border border-line rounded-md px-2 py-1.5 text-sm" maxlength="500"></label><div class="flex justify-end gap-2"><button type="button" class="cancel px-3 py-1.5 text-xs border border-line rounded-md">キャンセル</button><button class="px-3 py-1.5 text-xs font-bold bg-amber text-amberink rounded-md">保存</button></div>';
+          ["groupName", "activity", "person", "purpose"].forEach(
+            (key) => (form.elements[key].value = post[key] || ""),
+          );
+          form.querySelector(".cancel").onclick = () => form.remove();
+          form.onsubmit = async (e) => {
+            e.preventDefault();
+            const v = Object.fromEntries(new FormData(form));
+            await action(
+              () => GroupBoardStore.update(post.id, { ...post, ...v }),
+              "活動報告を編集しました。",
+            );
+          };
+          card.append(form);
+          form.elements.groupName.focus();
+        }
+        async function load() {
+          posts = await GroupBoardStore.list(boardId);
+          render();
+        }
+        async function submit() {
+          const values = {
+            groupName: elements.group.value.trim(),
+            activity: elements.activity.value.trim(),
+            person: elements.person.value.trim(),
+            purpose: elements.purpose.value.trim(),
+          };
+          if (!values.groupName || !values.activity) {
+            message("グループ名と活動内容を入力してください。", "error");
+            return;
+          }
+          await action(async () => {
+            await GroupBoardStore.create(boardId, values, deviceId());
+            elements.group.value =
+              elements.activity.value =
+              elements.person.value =
+              elements.purpose.value =
+                "";
+          }, "活動報告を投稿しました。");
+        }
+        function setLive(status) {
+          const box = $("liveStatus"),
+            dot = $("liveDot"),
+            text = $("liveText");
+          box.classList.remove("hidden");
+          box.classList.add("flex");
+          const map = {
+            SUBSCRIBED: ["bg-emerald-400", "リアルタイム接続中"],
+            CHANNEL_ERROR: ["bg-rose-400", "接続エラー（再接続中…）"],
+            TIMED_OUT: ["bg-rose-400", "タイムアウト（再接続中…）"],
+            CLOSED: ["bg-amber", "切断"],
+            CONNECTING: ["bg-amber", "接続中…"],
+          };
+          const [color, label] = map[status] || map.CONNECTING;
+          dot.className =
+            "inline-block w-2 h-2 rounded-full " +
+            (status === "SUBSCRIBED" ? "animate-pulse " : "") +
+            color;
+          text.textContent = label;
+        }
+        async function start() {
+          boardId = getBoardId();
+          elements.boardId.value = boardId;
+          $("copyLink").onclick = async () => {
+            try {
+              await navigator.clipboard.writeText(location.href);
+              message("共有リンクをコピーしました。");
+            } catch {
+              message("リンクをコピーできませんでした。", "error");
+            }
+          };
+          elements.add.onclick = submit;
+          elements.activity.onkeydown = (e) => {
+            if (e.ctrlKey && e.key === "Enter") {
+              e.preventDefault();
+              submit();
+            }
+          };
+          if (!window.GroupBoardStore || !GroupBoardStore.ready) {
+            elements.loading.textContent =
+              (window.GroupBoardStore && GroupBoardStore.error) ||
+              "Supabase を読み込めませんでした。";
+            return;
+          }
+          try {
+            setLive("CONNECTING");
+            await load();
+            GroupBoardStore.subscribe(
+              boardId,
+              () => load().catch(console.error),
+              setLive,
+            );
+          } catch (error) {
+            console.error(error);
+            elements.loading.textContent =
+              "投稿を読み込めませんでした：" + error.message;
+          }
+        }
+        start();
+      })();
+    </script>
+  </body>
 </html>
