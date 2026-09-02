@@ -12,11 +12,36 @@
   }
 
   const client = window.supabase.createClient(url, key, {
-    realtime: { params: { eventsPerSecond: 10 } }
+    realtime: { params: { eventsPerSecond: 10 } },
+    global: { headers: { 'x-device-id': deviceKey() } }
   });
   const table = 'group_posts';
   let channel;
   let currentBoardId = '';
+
+  // 端末IDをそのまま送らない(プライバシー保護)。決定論的ハッシュ化して送る。
+  function hashId(raw) {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function deviceKey() {
+    let id = localStorage.getItem('group-board-device-id');
+    if (!id) {
+      id = crypto.randomUUID
+        ? crypto.randomUUID()
+        : 'device-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      localStorage.setItem('group-board-device-id', id);
+    }
+    return hashId(id);
+  }
 
   function rowToPost(row) {
     return {
@@ -55,7 +80,7 @@
       purpose: values.purpose || null,
       status: 'todo',
       created_by: values.createdBy || 'Web user',
-      device_id: deviceId
+      device_id: deviceKey()
     }).select().single();
     if (error) throw error;
     broadcast(boardId);
