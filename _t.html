@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <body>
+    <script>
+      window.A = 1;
+    </script>
+    <script src="supabase-config.js"></script>
+    <script>
+      window.B =
+        typeof window.SUPABASE_CONFIG !== "undefined"
+          ? "cfg-ok"
+          : "cfg-missing";
+    </script>
+  </body>
+</html>
