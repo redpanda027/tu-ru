@@ -326,8 +326,13 @@
     if(!notes.length) return;
     const ok = window.confirm('すべての意見を削除します。よろしいですか?');
     if(!ok) return;
+    const removed = notes.slice();
     notes = [];
     board.querySelectorAll('.note').forEach(n => n.remove());
+    // Supabase 側も削除（他端末に反映させる）
+    if (window.IkkenSync && window.IkkenSync.ready) {
+      removed.forEach(n => IkkenSync.remove(n.id).catch(err => console.log('🗑️ Supabase 削除失敗:', err.message)));
+    }
     updateCountBadges();
     updateEmptyState();
     showStatus('ボードをリセットしました。', 'ok');
@@ -352,6 +357,10 @@
         note.el.style.top = note.y + 'px';
       }
     });
+    // 整頓後の位置を他端末へ同期
+    if (window.IkkenSync && window.IkkenSync.ready) {
+      order.forEach(note => IkkenSync.update(note.id, { x: note.x, y: note.y, z: note.z }).catch(() => {}));
+    }
     showStatus('カテゴリごとに整頓しました。', 'ok');
   }
 
@@ -562,7 +571,7 @@
 
   addBtn.addEventListener('click', addNote);
   textInput.addEventListener('keydown', (e) => {
-    if((e.key === 'Enter') && (e.metaKey || e.ctrlKey)){
+    if(e.key === 'Enter' && !e.isComposing){
       e.preventDefault();
       addNote();
     }
